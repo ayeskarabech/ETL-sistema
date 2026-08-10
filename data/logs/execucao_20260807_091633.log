@@ -1,0 +1,5 @@
+2026-08-07 09:16:33 | INFO | Log desta execução salvo em: d:\ETL_Python_NGR-SEE\data\logs\execucao_20260807_091633.log
+2026-08-07 09:16:33 | INFO | ============================================================
+2026-08-07 09:16:33 | INFO | Sistema de ETL — NGR-SEE — inicio da execucao
+2026-08-07 09:16:33 | INFO | ============================================================
+2026-08-07 09:17:35 | INFO | Formato detectado para 'Metas 2026 - Envio Sege.csv': {'encoding': 'latin-1', 'sep': ';'}

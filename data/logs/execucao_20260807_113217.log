@@ -1,0 +1,30 @@
+2026-08-07 11:32:17 | INFO | Log desta execução salvo em: D:\ETL_Python_NGR-SEE\data\logs\execucao_20260807_113217.log
+2026-08-07 11:32:26 | INFO | Formato detectado para 'eb7dc32f_Metas 2026 - Envio Sege.csv': {'encoding': 'latin-1', 'sep': ';'}
+2026-08-07 11:32:26 | INFO | Arquivo pequeno (0.1MB) — leitura direta.
+2026-08-07 11:32:26 | INFO | Carregado: 1031 linhas, 8 colunas.
+2026-08-07 11:32:26 | INFO | [CONTEXT] Arquivo carregado: Metas 2026 - Envio Sege.csv — 1031 linhas, 8 colunas.
+2026-08-07 11:37:08 | INFO | Etapa 1: [ERRO] ERRO na etapa 'remover_duplicatas': "None of [Index([''], dtype='str')] are in the [columns]"
+2026-08-07 11:37:08 | INFO | [CONTEXT] Texto (lower): [] — 1031 linhas, 8 colunas.
+2026-08-07 11:37:08 | INFO | Etapa 2: [OK] Texto normalizado em [].
+2026-08-07 11:37:08 | INFO | [CONTEXT] Formatar brasileiro: [] — 1031 linhas, 8 colunas.
+2026-08-07 11:37:08 | INFO | Etapa 3: [OK] Formato brasileiro aplicado em [].
+2026-08-07 11:37:08 | INFO | Coluna 'META EFAI - IDEPE': convertida para número. 1031 valores não numéricos viraram nulo.
+2026-08-07 11:37:08 | INFO | [CONTEXT] Tipos: {'META EFAI - IDEPE': 'numero'} — 1031 linhas, 8 colunas.
+2026-08-07 11:37:08 | INFO | Etapa 4: [OK] Tipos corrigidos.
+2026-08-07 11:37:08 | INFO | Coluna 'META EFAF - IDEPE': convertida para número. 1031 valores não numéricos viraram nulo.
+2026-08-07 11:37:08 | INFO | [CONTEXT] Tipos: {'META EFAF - IDEPE': 'numero'} — 1031 linhas, 8 colunas.
+2026-08-07 11:37:08 | INFO | Etapa 5: [OK] Tipos corrigidos.
+2026-08-07 11:37:08 | INFO | Coluna 'META EM - IDEPE': convertida para número. 1031 valores não numéricos viraram nulo.
+2026-08-07 11:37:08 | INFO | [CONTEXT] Tipos: {'META EM - IDEPE': 'numero'} — 1031 linhas, 8 colunas.
+2026-08-07 11:37:08 | INFO | Etapa 6: [OK] Tipos corrigidos.
+2026-08-07 11:37:08 | INFO | Coluna 'Escola': convertida para número. 1031 valores não numéricos viraram nulo.
+2026-08-07 11:37:08 | INFO | [CONTEXT] Tipos: {'Escola': 'numero'} — 1031 linhas, 8 colunas.
+2026-08-07 11:37:08 | INFO | Etapa 7: [OK] Tipos corrigidos.
+2026-08-07 11:38:19 | INFO | [ARRED] 'META EFAI - IDEPE' (2 casas) -> 'arredond meta efai'.
+2026-08-07 11:38:19 | INFO | [CONTEXT] ARRED: META EFAI - IDEPE — 1031 linhas, 9 colunas.
+2026-08-07 11:38:19 | INFO | Etapa 1: [OK] ARRED em 'META EFAI - IDEPE'.
+2026-08-07 11:38:19 | INFO | [ESQUERDA] 'Município' (3 chars) -> 'teste left municipio '.
+2026-08-07 11:38:19 | INFO | [CONTEXT] ESQUERDA: Município — 1031 linhas, 10 colunas.
+2026-08-07 11:38:19 | INFO | Etapa 2: [OK] ESQUERDA em 'Município'.
+2026-08-07 11:38:19 | INFO | [CONT.SE] 'META EFAI - IDEPE' criterio='> 4': 0.
+2026-08-07 11:38:19 | INFO | Etapa 3: [OK] CONT.SE = 0

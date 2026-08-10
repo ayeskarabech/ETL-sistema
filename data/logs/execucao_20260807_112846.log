@@ -1,0 +1,11 @@
+2026-08-07 11:28:46 | INFO | Log desta execução salvo em: D:\ETL_Python_NGR-SEE\data\logs\execucao_20260807_112846.log
+2026-08-07 11:28:51 | INFO | Formato detectado para '5692cac7_Metas 2026 - Envio Sege.csv': {'encoding': 'latin-1', 'sep': ';'}
+2026-08-07 11:28:51 | INFO | Arquivo pequeno (0.1MB) — leitura direta.
+2026-08-07 11:28:51 | INFO | Carregado: 1031 linhas, 8 colunas.
+2026-08-07 11:28:51 | INFO | [CONTEXT] Arquivo carregado: Metas 2026 - Envio Sege.csv — 1031 linhas, 8 colunas.
+2026-08-07 11:29:20 | INFO | Etapa 1: [ERRO] ERRO na etapa 'remover_duplicatas': "None of [Index([''], dtype='str')] are in the [columns]"
+2026-08-07 11:29:20 | INFO | Nenhuma coluna totalmente vazia encontrada.
+2026-08-07 11:29:20 | INFO | [CONTEXT] Colunas vazias removidas — 1031 linhas, 8 colunas.
+2026-08-07 11:29:20 | INFO | Etapa 2: [OK] Colunas vazias removidas.
+2026-08-07 11:29:20 | INFO | [CONTEXT] Texto (upper): [] — 1031 linhas, 8 colunas.
+2026-08-07 11:29:20 | INFO | Etapa 3: [OK] Texto normalizado em [].

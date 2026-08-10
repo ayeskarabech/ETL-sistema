@@ -1,0 +1,5 @@
+2026-08-07 09:32:59 | INFO | Log desta execução salvo em: d:\ETL_Python_NGR-SEE\data\logs\execucao_20260807_093259.log
+2026-08-07 09:33:07 | INFO | Formato detectado para 'Metas 2026 - Envio Sege.csv': {'encoding': 'latin-1', 'sep': ';'}
+2026-08-07 09:33:48 | INFO | Arquivo pequeno (0.1MB) — leitura direta.
+2026-08-07 09:33:48 | INFO | Carregado: 1031 linhas, 8 colunas.
+2026-08-07 09:33:49 | INFO | [CONTEXT] Arquivo carregado: Metas 2026 - Envio Sege.csv — 1031 linhas, 8 colunas.

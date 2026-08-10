@@ -1,0 +1,9 @@
+2026-08-07 11:52:53 | INFO | Log desta execução salvo em: D:\ETL_Python_NGR-SEE\data\logs\execucao_20260807_115253.log
+2026-08-07 11:52:53 | INFO | [CONTEXT] init — 3 linhas, 3 colunas.
+2026-08-07 11:52:53 | INFO | [INDICE_CORRESP] 'B' por 'A' (valor=y) -> 'B_indice'.
+2026-08-07 11:52:53 | INFO | [CONTEXT] INDICE+CORRESP: B — 3 linhas, 4 colunas.
+2026-08-07 11:52:53 | INFO | Etapa 1: [OK] INDICE+CORRESP em 'B'.
+2026-08-07 11:52:53 | INFO | [CONTEXT] init — 3 linhas, 3 colunas.
+2026-08-07 11:52:53 | INFO | [INDICE_CORRESP] 'B' por 'A' (valor=lookup) -> 'B_indice'.
+2026-08-07 11:52:53 | INFO | [CONTEXT] INDICE+CORRESP: B — 3 linhas, 4 colunas.
+2026-08-07 11:52:53 | INFO | Etapa 1: [OK] INDICE+CORRESP em 'B'.

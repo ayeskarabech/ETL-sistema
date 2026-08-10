@@ -1,0 +1,14 @@
+2026-08-07 11:11:48 | INFO | Log desta execução salvo em: D:\ETL_Python_NGR-SEE\data\logs\execucao_20260807_111148.log
+2026-08-07 11:12:13 | INFO | Formato detectado para 'dbb8d5c7_Metas 2026 - Envio Sege.csv': {'encoding': 'latin-1', 'sep': ';'}
+2026-08-07 11:12:13 | INFO | Arquivo pequeno (0.1MB) — leitura direta.
+2026-08-07 11:12:13 | INFO | Carregado: 1031 linhas, 8 colunas.
+2026-08-07 11:12:13 | INFO | [CONTEXT] Arquivo carregado: Metas 2026 - Envio Sege.csv — 1031 linhas, 8 colunas.
+2026-08-07 11:17:48 | INFO | [CONTEXT] Nulos removidos: [] — 1031 linhas, 8 colunas.
+2026-08-07 11:17:48 | INFO | Etapa 1: [OK] Linhas com nulos removidas.
+2026-08-07 11:17:48 | INFO | Etapa 2: [ERRO] ERRO na etapa 'remover_duplicatas': "None of [Index([''], dtype='str')] are in the [columns]"
+2026-08-07 11:18:46 | INFO | [ESQUERDA] 'META EFAI - IDEPE' (3 chars) -> 'teste meta formula esquerd'.
+2026-08-07 11:18:46 | INFO | [CONTEXT] ESQUERDA: META EFAI - IDEPE — 1031 linhas, 9 colunas.
+2026-08-07 11:18:46 | INFO | Etapa 1: [OK] ESQUERDA em 'META EFAI - IDEPE'.
+2026-08-07 11:18:46 | INFO | [CONCATENAR] ['GRE', 'Código MEC'] -> 'concat'.
+2026-08-07 11:18:46 | INFO | [CONTEXT] CONCATENAR: ['GRE', 'Código MEC'] — 1031 linhas, 10 colunas.
+2026-08-07 11:18:46 | INFO | Etapa 2: [OK] Colunas concatenadas.

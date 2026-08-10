@@ -1,0 +1,5 @@
+2026-08-07 11:43:37 | INFO | Log desta execução salvo em: D:\ETL_Python_NGR-SEE\data\logs\execucao_20260807_114337.log
+2026-08-07 11:43:49 | INFO | Formato detectado para 'e0956f8c_tx_rend_escolas_2025.csv': {'encoding': 'latin-1', 'sep': ';'}
+2026-08-07 11:43:49 | INFO | Arquivo pequeno (35.7MB) — leitura direta.
+2026-08-07 11:43:52 | INFO | Carregado: 126688 linhas, 63 colunas.
+2026-08-07 11:43:52 | INFO | [CONTEXT] Arquivo carregado: tx_rend_escolas_2025.csv — 126688 linhas, 63 colunas.

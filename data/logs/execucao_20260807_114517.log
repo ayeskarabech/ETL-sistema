@@ -1,0 +1,10 @@
+2026-08-07 11:45:17 | INFO | Log desta execução salvo em: D:\ETL_Python_NGR-SEE\data\logs\execucao_20260807_114517.log
+2026-08-07 11:45:17 | INFO | [CONTEXT] init — 3 linhas, 2 colunas.
+2026-08-07 11:45:17 | INFO | [HARMONICA] 'A': 16.3636 (n=3).
+2026-08-07 11:45:17 | INFO | Etapa 1: [OK] MEDIA HARMONICA = 16.3636
+2026-08-07 11:45:17 | INFO | [CORREL] 'A' vs 'B' (pearson): 1.0000.
+2026-08-07 11:45:17 | INFO | Etapa 1: [OK] PEARSON = 1.0000
+2026-08-07 11:45:19 | INFO | [CORREL] 'A' vs 'B' (spearman): 1.0000.
+2026-08-07 11:45:19 | INFO | Etapa 1: [OK] SPEARMAN = 1.0000
+2026-08-07 11:45:19 | INFO | [CORREL] 'A' vs 'B' (kendall): 1.0000.
+2026-08-07 11:45:19 | INFO | Etapa 1: [OK] CORREL(kendall) = 1.0000

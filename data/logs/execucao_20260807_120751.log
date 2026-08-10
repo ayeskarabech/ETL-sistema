@@ -1,0 +1,14 @@
+2026-08-07 12:07:51 | INFO | Log desta execução salvo em: D:\ETL_Python_NGR-SEE\data\logs\execucao_20260807_120751.log
+2026-08-07 12:08:02 | INFO | Formato detectado para '3e89a631_tx_rend_escolas_2025.csv': {'encoding': 'latin-1', 'sep': ';'}
+2026-08-07 12:08:02 | INFO | Arquivo pequeno (35.7MB) — leitura direta.
+2026-08-07 12:08:05 | INFO | Carregado: 126688 linhas, 63 colunas.
+2026-08-07 12:08:05 | INFO | [CONTEXT] Arquivo carregado: tx_rend_escolas_2025.csv — 126688 linhas, 63 colunas.
+2026-08-07 12:08:33 | INFO | Etapa 1: [ERRO] ERRO na etapa 'remover_duplicatas': "None of [Index([''], dtype='str')] are in the [columns]"
+2026-08-07 12:08:33 | INFO | [CONTEXT] Nulos preenchidos: [] — 126688 linhas, 63 colunas.
+2026-08-07 12:08:33 | INFO | Etapa 2: [OK] Nulos tratados.
+2026-08-07 12:08:33 | INFO | [CONTEXT] Formatar brasileiro: [] — 126688 linhas, 63 colunas.
+2026-08-07 12:08:33 | INFO | Etapa 3: [OK] Formato brasileiro aplicado em [].
+2026-08-07 12:08:44 | INFO | [CONTEXT] Texto (lower): [] — 126688 linhas, 63 colunas.
+2026-08-07 12:08:44 | INFO | Etapa 1: [OK] Texto normalizado em [].
+2026-08-07 12:08:59 | INFO | Etapa 1: [ERRO] ERRO na etapa 'cont_se': ufunc 'less' did not contain a loop with signature matching types (<class 'numpy.dtypes.Int64DType'>, <class 'numpy.dtypes.StrDType'>) -> None
+2026-08-07 12:09:24 | INFO | Etapa 1: [ERRO] ERRO na etapa 'concatenar': sequence item 0: expected str instance, float found
