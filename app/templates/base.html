@@ -1,0 +1,812 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ETL NGR-SEE</title>
+    <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body>
+
+<div class="app-layout">
+
+    <!-- ═══ SIDEBAR ═══ -->
+    <aside class="sidebar">
+        <div class="sidebar-logo">
+            <img src="/static/img/logo.png" alt="Logo" onerror="this.style.display='none'">
+            <div class="logo-text">
+                <span class="empresa">NGR-SEE</span>
+                <span class="sistema">Sistema ETL</span>
+            </div>
+        </div>
+
+        <nav class="sidebar-nav">
+            <a href="#" class="nav-item active" data-tab="tab-carregar">
+                <span class="nav-icon">&#128193;</span>
+                <span class="nav-label">Carregar</span>
+                <span class="nav-step">1</span>
+            </a>
+            <a href="#" class="nav-item" data-tab="tab-diagnostico">
+                <span class="nav-icon">&#128269;</span>
+                <span class="nav-label">Diagnostico</span>
+                <span class="nav-step">2</span>
+            </a>
+            <a href="#" class="nav-item" data-tab="tab-limpeza">
+                <span class="nav-icon">&#129529;</span>
+                <span class="nav-label">Limpeza</span>
+                <span class="nav-step">3</span>
+            </a>
+            <a href="#" class="nav-item" data-tab="tab-manipulacao">
+                <span class="nav-icon">&#9881;</span>
+                <span class="nav-label">Manipulacao</span>
+                <span class="nav-step">4</span>
+            </a>
+
+            <div class="nav-divider"></div>
+
+            <a href="#" class="nav-item" data-tab="tab-resultado">
+                <span class="nav-icon">&#128230;</span>
+                <span class="nav-label">Resultado</span>
+                <span class="nav-step">5</span>
+            </a>
+        </nav>
+
+        <div class="sidebar-footer">
+            <div class="status-badge">
+                <span class="status-dot"></span>
+                <span>Pronto</span>
+            </div>
+        </div>
+    </aside>
+
+    <!-- ═══ CONTEUDO PRINCIPAL ═══ -->
+    <main class="main-content">
+
+        <div class="page-header">
+            <h1>ETL <span>NGR-SEE</span></h1>
+            <div class="header-actions">
+                <span id="estado-badge" class="badge badge-info" style="display:none">
+                    <span id="estado-linhas">0</span> linhas | <span id="estado-colunas">0</span> colunas
+                </span>
+            </div>
+        </div>
+
+
+
+        <!-- ═══════════════════════════════════════════════════════════════════ -->
+        <!-- TAB 1: CARREGAR -->
+        <!-- ═══════════════════════════════════════════════════════════════════ -->
+        <div class="tab-panel active" id="tab-carregar">
+            <div class="glass-card">
+                <div class="glass-card-header">
+                    <h2><span class="card-icon">&#128193;</span> Carregar Dados</h2>
+                </div>
+
+                <div class="upload-area" id="upload-area">
+                    <input type="file" id="file-input" accept=".csv,.xlsx,.xls" style="display:none">
+                    <div class="upload-icon">&#128228;</div>
+                    <div class="upload-text">Arraste um arquivo ou clique para selecionar</div>
+                    <div class="upload-hint">Formatos aceitos: .csv, .xlsx, .xls</div>
+                </div>
+
+                <div id="upload-status" style="margin-top:20px; display:none">
+                    <div class="glass-card" style="margin-bottom:0">
+                        <div style="display:flex; align-items:center; justify-content:space-between">
+                            <div>
+                                <span class="badge badge-success">&#10003; Arquivo carregado</span>
+                                <div style="margin-top:8px; font-weight:600; color:var(--blue)" id="upload-nome"></div>
+                            </div>
+                            <div style="text-align:right">
+                                <div style="font-size:1.6rem; font-weight:700; color:var(--blue)" id="upload-linhas">0</div>
+                                <div style="font-size:0.8rem; color:var(--text-muted)">linhas</div>
+                            </div>
+                        </div>
+                        <div style="margin-top:14px">
+                            <div style="font-size:0.85rem; color:var(--text-secondary); margin-bottom:6px">Colunas detectadas:</div>
+                            <div id="upload-colunas" style="display:flex; flex-wrap:wrap; gap:6px"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ═══════════════════════════════════════════════════════════════════ -->
+        <!-- TAB 2: DIAGNOSTICO -->
+        <!-- ═══════════════════════════════════════════════════════════════════ -->
+        <div class="tab-panel" id="tab-diagnostico">
+            <div class="glass-card">
+                <div class="glass-card-header">
+                    <h2><span class="card-icon">&#128269;</span> Diagnostico da Base</h2>
+                    <button class="btn btn-primary" onclick="runDiagnostico()" id="btn-diag">
+                        &#9654; Analisar
+                    </button>
+                </div>
+
+                <div id="diag-loading" style="display:none; text-align:center; padding:40px">
+                    <div class="progress-bar" style="width:200px; margin:0 auto">
+                        <div class="progress-fill yellow" style="width:100%; animation: progress-pulse 1s infinite"></div>
+                    </div>
+                    <div style="margin-top:12px; color:var(--text-muted); font-size:0.85rem">Analisando base de dados...</div>
+                </div>
+
+                <div id="diag-result" style="display:none">
+                    <div class="grid-3" style="margin-bottom:20px">
+                        <div class="stat-card">
+                            <div class="stat-label">Problemas</div>
+                            <div class="stat-value" id="diag-count">0</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-label">Sugestoes</div>
+                            <div class="stat-value" id="diag-sugestoes-count">0</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-label">Status</div>
+                            <div class="stat-value" id="diag-status" style="font-size:1rem">—</div>
+                        </div>
+                    </div>
+
+                    <div class="glass-card" style="margin-bottom:0">
+                        <h3 style="font-size:0.95rem; margin-bottom:12px; color:var(--text-primary)">Resumo</h3>
+                        <pre id="diag-resumo" style="font-size:0.82rem; color:var(--text-secondary); white-space:pre-wrap; line-height:1.6; max-height:300px; overflow-y:auto"></pre>
+                    </div>
+
+                    <div id="diag-sugestoes-box" style="display:none; margin-top:20px">
+                        <div class="glass-card" style="margin-bottom:0">
+                            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px">
+                                <h3 style="font-size:0.95rem; color:var(--text-primary)">Sugestoes de Tratamento</h3>
+                                <button class="btn btn-accent btn-sm" onclick="aplicarSugestoes()">&#10003; Aplicar Todas</button>
+                            </div>
+                            <div class="item-list" id="diag-sugestoes-list"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ═══════════════════════════════════════════════════════════════════ -->
+        <!-- TAB 3: LIMPEZA -->
+        <!-- ═══════════════════════════════════════════════════════════════════ -->
+        <div class="tab-panel" id="tab-limpeza">
+            <div class="glass-card">
+                <div class="glass-card-header">
+                    <h2><span class="card-icon">&#129529;</span> Limpeza de Dados</h2>
+                    <button class="btn btn-primary btn-sm" onclick="executarLimpeza()" id="btn-exec-limp">
+                        &#9654; Executar Etapas
+                    </button>
+                </div>
+
+                <div class="grid-2">
+                    <!-- Formulário de limpeza -->
+                    <div>
+                        <div class="form-group">
+                            <label>Operacao</label>
+                            <select class="form-control" id="limp-operacao" onchange="atualizarFormLimpeza()">
+                                <option value="">Selecione...</option>
+                                <option value="remover_duplicatas">Remover duplicatas</option>
+                                <option value="remover_nulos">Remover linhas com nulos</option>
+                                <option value="preencher_nulos">Preencher valores nulos</option>
+                                <option value="remover_colunas_vazias">Remover colunas vazias</option>
+                                <option value="substituir_valores">Substituir valores (exato)</option>
+                                <option value="substituir_regex">Substituir por regex</option>
+                                <option value="normalizar_texto">Normalizar texto</option>
+                                <option value="corrigir_tipo">Corrigir tipo</option>
+                                <option value="unificar_valores">Unificar valores similares</option>
+                                <option value="formatar_brasileiro">Formato brasileiro</option>
+                            </select>
+                        </div>
+
+                        <div id="limp-params"></div>
+
+                        <button class="btn btn-secondary" onclick="adicionarLimpeza()" style="margin-top:8px">
+                            &#43; Adicionar Etapa
+                        </button>
+                    </div>
+
+                    <!-- Fila de etapas -->
+                    <div>
+                        <div style="font-size:0.85rem; font-weight:600; color:var(--text-secondary); margin-bottom:10px">
+                            Etapas Pendentes
+                        </div>
+                        <div class="item-list" id="limp-fila">
+                            <div style="text-align:center; padding:24px; color:var(--text-muted); font-size:0.85rem">
+                                Nenhuma etapa adicionada
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Resultado da execucao -->
+                <div id="limp-result" style="display:none; margin-top:20px">
+                    <div style="font-size:0.85rem; font-weight:600; color:var(--text-secondary); margin-bottom:10px">
+                        Resultado
+                    </div>
+                    <div class="item-list" id="limp-result-list"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ═══════════════════════════════════════════════════════════════════ -->
+        <!-- TAB 4: MANIPULACAO -->
+        <!-- ═══════════════════════════════════════════════════════════════════ -->
+        <div class="tab-panel" id="tab-manipulacao">
+            <div class="glass-card">
+                <div class="glass-card-header">
+                    <h2><span class="card-icon">&#9881;</span> Manipulacao / Formulas</h2>
+                    <button class="btn btn-primary btn-sm" onclick="executarManipulacao()" id="btn-exec-manip">
+                        &#9654; Executar Etapas
+                    </button>
+                </div>
+
+                <div class="grid-2">
+                    <!-- Formulario -->
+                    <div>
+                        <div class="form-group">
+                            <label>Operacao</label>
+                            <select class="form-control" id="manip-operacao" onchange="atualizarFormManip()">
+                                <option value="">Selecione...</option>
+                                <optgroup label="Busca">
+                                    <option value="procv">PROCV (VLOOKUP)</option>
+                                    <option value="indice_corresp">INDICE+CORRESP (INDEX-MATCH)</option>
+                                    <option value="corresp">CORRESP (MATCH)</option>
+                                </optgroup>
+                                <optgroup label="Texto">
+                                    <option value="esquerda">ESQUERDA (LEFT)</option>
+                                    <option value="direita">DIREITA (RIGHT)</option>
+                                    <option value="meio">MEIO (MID)</option>
+                                    <option value="tamanho">TAMANHO (LEN)</option>
+                                    <option value="concatenar">CONCATENAR</option>
+                                    <option value="substituir_texto">SUBSTITUIR (SUBSTITUTE)</option>
+                                </optgroup>
+                                <optgroup label="Logica">
+                                    <option value="se">SE (IF)</option>
+                                </optgroup>
+                                <optgroup label="Numeros">
+                                    <option value="arred">ARRED (ROUND)</option>
+                                    <option value="cont_se">CONT.SE (COUNTIF)</option>
+                                    <option value="somase">SOMASE (SUMIF)</option>
+                                    <option value="coluna_calculada">Coluna Calculada</option>
+                                </optgroup>
+                                <optgroup label="Estatistica">
+                                    <option value="harmonica">MEDIA HARMONICA (HARMEAN)</option>
+                                    <option value="correl">CORREL (Correlacao)</option>
+                                    <option value="pearson">PEARSON (r)</option>
+                                    <option value="spearman">SPEARMAN (rho)</option>
+                                </optgroup>
+                                <optgroup label="Tabelas">
+                                    <option value="juntar">Juntar (JOIN)</option>
+                                    <option value="agregar">Agregar (GROUP BY)</option>
+                                </optgroup>
+                                <optgroup label="Coluna">
+                                    <option value="adicionar_coluna">Adicionar Coluna</option>
+                                    <option value="renomear_coluna">Renomear Coluna</option>
+                                    <option value="remover_coluna">Remover Coluna</option>
+                                    <option value="ordenar_por">Ordenar Por</option>
+                                    <option value="reordenar_colunas">Reordenar Colunas</option>
+                                    <option value="filtrar_linhas">Filtrar Linhas</option>
+                                </optgroup>
+                            </select>
+                        </div>
+
+                        <div id="manip-params"></div>
+
+                        <button class="btn btn-secondary" onclick="adicionarManipulacao()" style="margin-top:8px">
+                            &#43; Adicionar Etapa
+                        </button>
+                    </div>
+
+                    <!-- Fila -->
+                    <div>
+                        <div style="font-size:0.85rem; font-weight:600; color:var(--text-secondary); margin-bottom:10px">
+                            Etapas Pendentes
+                        </div>
+                        <div class="item-list" id="manip-fila">
+                            <div style="text-align:center; padding:24px; color:var(--text-muted); font-size:0.85rem">
+                                Nenhuma etapa adicionada
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="manip-result" style="display:none; margin-top:20px">
+                    <div style="font-size:0.85rem; font-weight:600; color:var(--text-secondary); margin-bottom:10px">
+                        Resultado
+                    </div>
+                    <div class="item-list" id="manip-result-list"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ═══════════════════════════════════════════════════════════════════ -->
+        <!-- TAB 5: RESULTADO -->
+        <!-- ═══════════════════════════════════════════════════════════════════ -->
+        <div class="tab-panel" id="tab-resultado">
+
+            <!-- Header com acoes -->
+            <div class="glass-card-header" style="margin-bottom:20px">
+                <h1 style="font-size:1.4rem">Diagnostico <span>Final</span></h1>
+                <div style="display:flex; gap:8px">
+                    <button class="btn btn-primary btn-sm" onclick="carregarDiagnosticoFinal()">&#8635; Atualizar</button>
+                    <button class="btn btn-secondary btn-sm" onclick="carregarPreview()">&#128269; Preview</button>
+                    <button class="btn btn-accent btn-sm" onclick="abrirBrowserPastas()">&#128193; Escolher Pasta</button>
+                    <button class="btn btn-accent btn-sm" onclick="exportarDados()">&#128229; Exportar CSV</button>
+                </div>
+            </div>
+
+            <!-- Pasta de destino -->
+            <div class="glass-card" style="margin-bottom:20px">
+                <div style="font-size:0.9rem; font-weight:600; color:var(--text-primary); margin-bottom:10px">Pasta de Destino</div>
+                <div style="display:flex; gap:8px; align-items:center">
+                    <input class="form-control" id="pasta-destino" placeholder="Selecione uma pasta..." readonly style="flex:1">
+                    <button class="btn btn-secondary btn-sm" onclick="abrirBrowserPastas()">&#128193; Navegar</button>
+                </div>
+                <div style="font-size:0.78rem; color:var(--text-muted); margin-top:6px">
+                    Padrão: <span id="pasta-default" style="font-family:monospace">{{ pasta_processed }}</span>
+                </div>
+            </div>
+
+            <!-- Modal Browser de Pastas -->
+            <div id="folder-browser-modal" class="modal-overlay">
+                <div class="glass-card modal-card">
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px">
+                        <h3 style="font-size:1rem; color:var(--text-primary); margin:0">Navegar Pastas</h3>
+                        <button class="btn btn-ghost btn-sm" onclick="fecharBrowserPastas()">&#10005;</button>
+                    </div>
+                    <div style="display:flex; gap:6px; margin-bottom:12px; align-items:center">
+                        <button class="btn btn-ghost btn-sm" id="btn-pai" onclick="navegarPai()">&#9664;</button>
+                        <input class="form-control" id="browser-caminho" readonly style="flex:1; font-family:monospace; font-size:0.82rem">
+                    </div>
+                    <div class="folder-list" id="browser-lista" style="max-height:350px; overflow-y:auto"></div>
+                    <div style="display:flex; justify-content:flex-end; gap:8px; margin-top:16px">
+                        <button class="btn btn-secondary btn-sm" onclick="fecharBrowserPastas()">Cancelar</button>
+                        <button class="btn btn-accent btn-sm" onclick="confirmarPasta()">&#10003; Selecionar Esta Pasta</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Comparacao ANTES / DEPOIS -->
+            <div id="diag-final-loading" style="text-align:center; padding:40px">
+                <div style="color:var(--text-muted); font-size:0.9rem">Clique em "Atualizar" ou va ate esta aba para carregar o diagnostico.</div>
+            </div>
+
+            <div id="diag-final-conteudo" style="display:none">
+
+                <!-- Cards de comparacao -->
+                <div class="grid-2" style="margin-bottom:20px">
+                    <div class="glass-card" style="margin-bottom:0">
+                        <div style="font-size:0.8rem; font-weight:600; color:var(--text-muted); text-transform:uppercase; letter-spacing:0.5px; margin-bottom:14px">&#9664; Estado Inicial</div>
+                        <div class="grid-2" style="gap:12px">
+                            <div>
+                                <div class="stat-label">Linhas</div>
+                                <div class="stat-value" id="df-linhas-antes" style="font-size:1.4rem">0</div>
+                            </div>
+                            <div>
+                                <div class="stat-label">Colunas</div>
+                                <div class="stat-value" id="df-colunas-antes" style="font-size:1.4rem">0</div>
+                            </div>
+                            <div>
+                                <div class="stat-label">Nulos</div>
+                                <div class="stat-value" id="df-nulos-antes" style="font-size:1.4rem">0</div>
+                            </div>
+                            <div>
+                                <div class="stat-label">Duplicatas</div>
+                                <div class="stat-value" id="df-dups-antes" style="font-size:1.4rem">0</div>
+                            </div>
+                        </div>
+                        <div style="margin-top:12px; font-size:0.78rem; color:var(--text-muted)">
+                            Memoria: <span id="df-mem-antes">0</span> MB
+                        </div>
+                    </div>
+
+                    <div class="glass-card" style="margin-bottom:0; border-left:4px solid var(--yellow)">
+                        <div style="font-size:0.8rem; font-weight:600; color:var(--text-muted); text-transform:uppercase; letter-spacing:0.5px; margin-bottom:14px">&#9654; Estado Final</div>
+                        <div class="grid-2" style="gap:12px">
+                            <div>
+                                <div class="stat-label">Linhas</div>
+                                <div class="stat-value" id="df-linhas-depois" style="font-size:1.4rem">0</div>
+                            </div>
+                            <div>
+                                <div class="stat-label">Colunas</div>
+                                <div class="stat-value" id="df-colunas-depois" style="font-size:1.4rem">0</div>
+                            </div>
+                            <div>
+                                <div class="stat-label">Nulos</div>
+                                <div class="stat-value" id="df-nulos-depois" style="font-size:1.4rem">0</div>
+                            </div>
+                            <div>
+                                <div class="stat-label">Duplicatas</div>
+                                <div class="stat-value" id="df-dups-depois" style="font-size:1.4rem">0</div>
+                            </div>
+                        </div>
+                        <div style="margin-top:12px; font-size:0.78rem; color:var(--text-muted)">
+                            Memoria: <span id="df-mem-depois">0</span> MB
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Variacoes resumidas -->
+                <div class="grid-4" style="margin-bottom:20px">
+                    <div class="stat-card">
+                        <div class="stat-label">Linhas</div>
+                        <div class="stat-value" id="df-var-linhas" style="font-size:1.1rem">0</div>
+                        <div class="stat-change" id="df-var-linhas-pct"></div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label">Colunas</div>
+                        <div class="stat-value" id="df-var-colunas" style="font-size:1.1rem">0</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label">Nulos</div>
+                        <div class="stat-value" id="df-var-nulos" style="font-size:1.1rem">0</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label">Duplicatas</div>
+                        <div class="stat-value" id="df-var-dups" style="font-size:1.1rem">0</div>
+                    </div>
+                </div>
+
+                <!-- Colunas adicionadas / removidas -->
+                <div class="glass-card" style="margin-bottom:20px" id="df-colunas-box" style="display:none">
+                    <div style="font-size:0.9rem; font-weight:600; color:var(--text-primary); margin-bottom:12px">Mudancas na Estrutura</div>
+                    <div id="df-colunas-info" style="font-size:0.85rem; color:var(--text-secondary)"></div>
+                </div>
+
+                <!-- Historico detalhado passo a passo -->
+                <div class="glass-card" style="margin-bottom:20px">
+                    <div style="font-size:0.9rem; font-weight:600; color:var(--text-primary); margin-bottom:16px">Historico Detalhado</div>
+                    <div id="df-historico" class="item-list"></div>
+                </div>
+
+                <!-- Preview Table -->
+                <div id="preview-box" style="display:none">
+                    <div class="glass-card" style="margin-bottom:0">
+                        <div style="font-size:0.9rem; font-weight:600; color:var(--text-primary); margin-bottom:12px">Preview dos Dados</div>
+                        <div style="overflow-x:auto; border-radius:var(--radius-sm); border:1px solid var(--border)">
+                            <table class="data-table" id="preview-table">
+                                <thead id="preview-thead"></thead>
+                                <tbody id="preview-tbody"></tbody>
+                            </table>
+                        </div>
+                        <div style="margin-top:8px; text-align:center; font-size:0.8rem; color:var(--text-muted)">
+                            Mostrando <span id="preview-count">0</span> de <span id="preview-total">0</span> linhas
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Export Result -->
+                <div id="export-result" style="display:none; margin-top:20px">
+                    <div class="glass-card" style="margin-bottom:0; border-left:4px solid #2ECC71">
+                        <div style="display:flex; align-items:center; gap:12px">
+                            <span style="font-size:1.4rem">&#9989;</span>
+                            <div>
+                                <div style="font-weight:600; color:var(--blue)">Exportado com sucesso</div>
+                                <div style="font-size:0.85rem; color:var(--text-muted); margin-top:4px" id="export-file"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+    </main>
+</div>
+
+<script>
+/* ═══ ETL NGR-SEE — Tudo-em-um (sem dependencia de app.js) ═══ */
+const SID = '{{ session_id }}';
+let etapasLimpeza = [];
+let etapasManip = [];
+
+/* ── UTILS ──────────────────────────────────────────────────── */
+function fmtNum(n) { return (n === null || n === undefined) ? '0' : Number(n).toLocaleString('pt-BR'); }
+function getMultiSelect(id) { const el = document.getElementById(id); return el ? Array.from(el.selectedOptions).map(o => o.value) : []; }
+function showNotification(msg, tipo = 'info') {
+    const n = document.createElement('div');
+    n.style.cssText = `position:fixed;top:20px;right:20px;z-index:2000;padding:14px 24px;border-radius:12px;background:rgba(255,255,255,0.85);backdrop-filter:blur(20px);border:1px solid rgba(31,67,140,0.1);box-shadow:0 8px 30px rgba(31,67,140,0.12);font-family:'Inter',sans-serif;font-size:0.9rem;font-weight:500;animation:fadeIn 0.3s ease;border-left:4px solid ${tipo==='success'?'#2ECC71':tipo==='error'?'#E74C3C':'#1F438C'}`;
+    n.textContent = msg;
+    document.body.appendChild(n);
+    setTimeout(() => n.remove(), 4000);
+}
+function showPanel(id) {
+    document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+    document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+    const p = document.getElementById(id); if (p) p.classList.add('active');
+    const nav = document.querySelector(`.nav-item[data-tab="${id}"]`); if (nav) nav.classList.add('active');
+}
+
+/* ── NAV SIDEBAR ────────────────────────────────────────────── */
+document.addEventListener('DOMContentLoaded', () => {
+    document.querySelectorAll('.nav-item[data-tab]').forEach(item => {
+        item.addEventListener('click', e => {
+            e.preventDefault();
+            const t = item.dataset.tab;
+            document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+            item.classList.add('active');
+            document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+            const panel = document.getElementById(t); if (panel) panel.classList.add('active');
+            if (t === 'tab-resultado') carregarDiagnosticoFinal();
+        });
+    });
+});
+
+/* ── UPLOAD ──────────────────────────────────────────────────── */
+const uploadArea = document.getElementById('upload-area');
+const fileInput = document.getElementById('file-input');
+uploadArea.addEventListener('click', () => fileInput.click());
+uploadArea.addEventListener('dragover', e => { e.preventDefault(); uploadArea.classList.add('dragover'); });
+uploadArea.addEventListener('dragleave', () => uploadArea.classList.remove('dragover'));
+uploadArea.addEventListener('drop', e => { e.preventDefault(); uploadArea.classList.remove('dragover'); if (e.dataTransfer.files.length) { fileInput.files = e.dataTransfer.files; uploadFile(e.dataTransfer.files[0]); } });
+fileInput.addEventListener('change', () => { if (fileInput.files.length) uploadFile(fileInput.files[0]); });
+
+async function uploadFile(file) {
+    const fd = new FormData(); fd.append('arquivo', file);
+    const sizeMB = (file.size / 1024 / 1024).toFixed(1);
+    uploadArea.querySelector('.upload-text').innerHTML = 'Carregando<span class="loading-dots"></span>';
+    uploadArea.querySelector('.upload-hint').textContent = sizeMB + ' MB';
+    uploadArea.style.pointerEvents = 'none';
+    const ctrl = new AbortController();
+    const tid = setTimeout(() => ctrl.abort(), 600000);
+    try {
+        const r = await fetch('/upload/' + SID, { method: 'POST', body: fd, signal: ctrl.signal });
+        clearTimeout(tid);
+        const j = await r.json();
+        if (j.ok) {
+            document.getElementById('upload-status').style.display = 'block';
+            document.getElementById('upload-nome').textContent = file.name;
+            document.getElementById('upload-linhas').textContent = fmtNum(j.linhas);
+            document.getElementById('upload-colunas').innerHTML = j.colunas.map(c => '<span class="badge badge-info">'+c+'</span>').join('');
+            uploadArea.querySelector('.upload-icon').innerHTML = '&#10003;';
+            uploadArea.querySelector('.upload-text').textContent = 'Arquivo carregado!';
+            uploadArea.querySelector('.upload-hint').textContent = '';
+            updateEstado();
+            showNotification('Arquivo carregado com sucesso!', 'success');
+        } else { showNotification('Erro: ' + j.mensagem, 'error'); uploadArea.querySelector('.upload-text').textContent = 'Arraste ou clique para selecionar'; uploadArea.querySelector('.upload-hint').textContent = 'Formatos aceitos: .csv, .xlsx, .xls'; uploadArea.style.pointerEvents = ''; }
+    } catch (e) { clearTimeout(tid); showNotification(e.name==='AbortError'?'Tempo esgotado.':'Erro: '+e.message, 'error'); uploadArea.querySelector('.upload-text').textContent = 'Arraste ou clique para selecionar'; uploadArea.querySelector('.upload-hint').textContent = 'Formatos aceitos: .csv, .xlsx, .xls'; uploadArea.style.pointerEvents = ''; }
+}
+
+/* ── DIAGNOSTICO ─────────────────────────────────────────────── */
+async function runDiagnostico() {
+    document.getElementById('diag-loading').style.display = 'block';
+    document.getElementById('diag-result').style.display = 'none';
+    document.getElementById('btn-diag').disabled = true;
+    try {
+        const r = await fetch('/diagnostico/' + SID); const j = await r.json();
+        document.getElementById('diag-loading').style.display = 'none'; document.getElementById('btn-diag').disabled = false;
+        if (j.ok) {
+            document.getElementById('diag-result').style.display = 'block';
+            document.getElementById('diag-count').textContent = j.problemas;
+            document.getElementById('diag-sugestoes-count').textContent = j.sugestoes.length;
+            document.getElementById('diag-status').innerHTML = j.problemas===0?'<span class="badge badge-success">Saudavel</span>':'<span class="badge badge-warning">Atencao</span>';
+            document.getElementById('diag-resumo').textContent = j.resumo;
+            if (j.sugestoes.length) {
+                document.getElementById('diag-sugestoes-box').style.display = 'block';
+                document.getElementById('diag-sugestoes-list').innerHTML = j.sugestoes.map((s,i) => '<div class="item"><div class="item-info"><div class="item-icon yellow">&#9888;</div><div><div style="font-weight:500;font-size:0.88rem">'+(s.descricao||s.operacao)+'</div><div style="font-size:0.78rem;color:var(--text-muted)">'+s.operacao+'</div></div></div><span class="badge badge-warning">sugestao</span></div>').join('');
+            } else { document.getElementById('diag-sugestoes-box').style.display = 'none'; }
+        } else { showNotification(j.mensagem, 'error'); }
+    } catch (e) { document.getElementById('diag-loading').style.display = 'none'; document.getElementById('btn-diag').disabled = false; showNotification('Erro: '+e.message, 'error'); }
+}
+async function aplicarSugestoes() {
+    try { const r = await fetch('/aplicar_sugestoes/'+SID,{method:'POST'}); const j = await r.json(); if(j.ok){showNotification(j.resultados.length+' sugestao(es) aplicada(s)!','success');updateEstado();}else{showNotification(j.mensagem,'error');} } catch(e){showNotification('Erro: '+e.message,'error');}
+}
+
+/* ── DIAGNOSTICO FINAL ───────────────────────────────────────── */
+async function carregarDiagnosticoFinal() {
+    const loading = document.getElementById('diag-final-loading');
+    const conteudo = document.getElementById('diag-final-conteudo');
+    loading.style.display = 'block'; conteudo.style.display = 'none';
+    try {
+        const r = await fetch('/diagnostico_final/'+SID); const j = await r.json();
+        if (!j.ok) { loading.innerHTML = '<div style="color:var(--text-muted)">'+(j.mensagem||'Erro.')+'</div>'; return; }
+        loading.style.display = 'none'; conteudo.style.display = 'block';
+        const ini=j.inicial||{}, fin=j.final||{};
+        document.getElementById('df-linhas-antes').textContent=fmtNum(ini.linhas||0);
+        document.getElementById('df-colunas-antes').textContent=ini.colunas||0;
+        document.getElementById('df-nulos-antes').textContent=fmtNum(ini.nulos||0);
+        document.getElementById('df-dups-antes').textContent=fmtNum(ini.duplicatas||0);
+        document.getElementById('df-mem-antes').textContent=ini.memoria||0;
+        document.getElementById('df-linhas-depois').textContent=fmtNum(fin.linhas||0);
+        document.getElementById('df-colunas-depois').textContent=fin.colunas||0;
+        document.getElementById('df-nulos-depois').textContent=fmtNum(fin.nulos||0);
+        document.getElementById('df-dups-depois').textContent=fmtNum(fin.duplicatas||0);
+        document.getElementById('df-mem-depois').textContent=fin.memoria||0;
+        const vL=(fin.linhas||0)-(ini.linhas||0), vC=(fin.colunas||0)-(ini.colunas||0), vN=(fin.nulos||0)-(ini.nulos||0), vD=(fin.duplicatas||0)-(ini.duplicatas||0);
+        document.getElementById('df-var-linhas').innerHTML='<span style="color:'+(vL<0?'#E74C3C':vL>0?'#2ECC71':'inherit')+'">'+(vL>0?'+':'')+fmtNum(vL)+'</span>';
+        document.getElementById('df-var-linhas-pct').innerHTML=vL===0?'<span class="stat-change neutral">sem alteracao</span>':'<span class="stat-change '+(vL<0?'negative':'positive')+'">'+((vL/(ini.linhas||1)*100).toFixed(1))+'%</span>';
+        document.getElementById('df-var-colunas').innerHTML='<span style="color:'+(vC<0?'#E74C3C':vC>0?'#2ECC71':'inherit')+'">'+(vC>0?'+':'')+fmtNum(vC)+'</span>';
+        document.getElementById('df-var-nulos').innerHTML='<span style="color:'+(vN>0?'#E74C3C':vN<0?'#2ECC71':'inherit')+'">'+(vN>0?'+':'')+fmtNum(vN)+'</span>';
+        document.getElementById('df-var-dups').innerHTML='<span style="color:'+(vD>0?'#E74C3C':vD<0?'#2ECC71':'inherit')+'">'+(vD>0?'+':'')+fmtNum(vD)+'</span>';
+        const colIni=ini.colunas_lista||[], colFin=fin.colunas_lista||[];
+        const adic=colFin.filter(c=>!colIni.includes(c)), rem=colIni.filter(c=>!colFin.includes(c));
+        const cInfo=document.getElementById('df-colunas-info');
+        if(adic.length||rem.length){let h='';if(adic.length)h+='<div style="margin-bottom:8px"><span class="badge badge-success">+'+adic.length+' adicionada(s)</span> '+adic.map(c=>'<span class="badge badge-info">'+c+'</span>').join(' ')+'</div>';if(rem.length)h+='<div><span class="badge badge-danger">-'+rem.length+' removida(s)</span> '+rem.map(c=>'<span class="badge badge-warning">'+c+'</span>').join(' ')+'</div>';cInfo.innerHTML=h;document.getElementById('df-colunas-box').style.display='block';}else{document.getElementById('df-colunas-box').style.display='none';}
+        const hist=j.historico||[], hDiv=document.getElementById('df-historico');
+        if(!hist.length){hDiv.innerHTML='<div style="text-align:center;padding:24px;color:var(--text-muted);font-size:0.85rem">Nenhuma operacao executada</div>';}
+        else{hDiv.innerHTML=hist.map((h,i)=>{
+            const dL=(h.linhas_depois||0)-(h.linhas_antes||0), dC=(h.colunas_depois||0)-(h.colunas_antes||0);
+            const cls=dL<0?'red':dL>0?'green':dC!==0?'yellow':'blue';
+            let ex='';if(dL!==0||dC!==0){const p=[];if(dL!==0)p.push((dL>0?'+':'')+fmtNum(dL)+' linhas');if(dC!==0)p.push((dC>0?'+':'')+dC+' colunas');ex='<div style="margin-top:4px;font-size:0.75rem"><span class="badge '+(dL<0?'badge-danger':dL>0?'badge-success':'badge-info')+'">'+p.join(' | ')+'</span></div>';}
+            return '<div class="item" style="flex-direction:column;align-items:flex-start;padding:14px 16px"><div style="display:flex;align-items:center;gap:10px;width:100%"><div class="item-icon '+cls+'" style="flex-shrink:0">'+(i+1)+'</div><div style="flex:1"><div style="font-weight:600;font-size:0.88rem;color:var(--text-primary)">'+(h.operacao||'(sem descricao)')+'</div><div style="font-size:0.78rem;color:var(--text-muted);margin-top:2px">'+(h.linhas_antes||0)+' linhas, '+(h.colunas_antes||0)+' colunas &#8594; '+(h.linhas_depois||0)+' linhas, '+(h.colunas_depois||0)+' colunas</div>'+ex+'</div></div></div>';
+        }).join('');}
+    } catch(e){loading.innerHTML='<div style="color:var(--text-muted)">Erro: '+e.message+'</div>';}
+}
+
+/* ── LIMPEZA ─────────────────────────────────────────────────── */
+function adicionarLimpeza() {
+    const op=document.getElementById('limp-operacao').value; if(!op){showNotification('Selecione uma operacao','error');return;}
+    let params={};
+    switch(op){
+        case 'remover_duplicatas': params={colunas:getMultiSelect('lp-col')||null};break;
+        case 'remover_nulos': params={colunas:getMultiSelect('lp-col')};break;
+        case 'preencher_nulos':{const c=getMultiSelect('lp-col'),v=document.getElementById('lp-valor')?.value||'',e={};c.forEach(x=>e[x]=v||'');params={estrategias:e};break;}
+        case 'remover_colunas_vazias': params={limiar:parseFloat(document.getElementById('lp-limiar')?.value||1)};break;
+        case 'substituir_valores':{const c=getMultiSelect('lp-col'),a=document.getElementById('lp-antigo')?.value,n=document.getElementById('lp-novo')?.value,m={};if(a)m[a]=n;params={colunas:c,mapeamento:m};break;}
+        case 'substituir_regex': params={colunas:getMultiSelect('lp-col'),padrao:document.getElementById('lp-padrao')?.value,novo:document.getElementById('lp-novo')?.value};break;
+        case 'normalizar_texto': params={colunas:getMultiSelect('lp-col'),modo:document.getElementById('lp-modo')?.value};break;
+        case 'corrigir_tipo': params={tipos:{[document.getElementById('lp-col')?.value]:document.getElementById('lp-tipo')?.value}};break;
+        case 'unificar_valores':{const c=document.getElementById('lp-col')?.value,ce=document.getElementById('lp-certo')?.value,v=(document.getElementById('lp-variantes')?.value||'').split(',').map(s=>s.trim()).filter(Boolean),m={};if(ce)m[ce]=v;params={coluna:c,mapeamento:m};break;}
+        case 'formatar_brasileiro': params={colunas:getMultiSelect('lp-col'),casas:parseInt(document.getElementById('lp-casas')?.value||2)};break;
+    }
+    etapasLimpeza.push({operacao:op,params});renderFilaLimpeza();showNotification('Etapa "'+op+'" adicionada','success');
+}
+function renderFilaLimpeza(){const d=document.getElementById('limp-fila');if(!etapasLimpeza.length){d.innerHTML='<div style="text-align:center;padding:24px;color:var(--text-muted);font-size:0.85rem">Nenhuma etapa adicionada</div>';return;}d.innerHTML=etapasLimpeza.map((e,i)=>'<div class="item"><div class="item-info"><div class="item-icon blue">'+(i+1)+'</div><div><div style="font-weight:500;font-size:0.88rem">'+e.operacao+'</div><div style="font-size:0.78rem;color:var(--text-muted)">'+JSON.stringify(e.params).substring(0,80)+'</div></div></div><button class="btn btn-ghost btn-sm" onclick="etapasLimpeza.splice('+i+',1);renderFilaLimpeza()">&#10005;</button></div>').join('');}
+async function executarLimpeza(){
+    if(!etapasLimpeza.length){showNotification('Nenhuma etapa pendente','error');return;}
+    for(const e of etapasLimpeza)await fetch('/limpeza/'+SID,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(e)});
+    try{const r=await fetch('/executar_limpeza/'+SID,{method:'POST'});const j=await r.json();if(j.ok){etapasLimpeza=[];renderFilaLimpeza();document.getElementById('limp-result').style.display='block';document.getElementById('limp-result-list').innerHTML=j.resultados.map(r=>'<div class="item"><div class="item-info"><div class="item-icon green">&#10003;</div><div style="font-size:0.88rem">'+r+'</div></div></div>').join('');updateEstado();showNotification('Limpeza executada!','success');}else{showNotification(j.mensagem,'error');}}catch(e){showNotification('Erro: '+e.message,'error');}
+}
+
+/* ── MANIPULACAO ─────────────────────────────────────────────── */
+function adicionarManipulacao() {
+    const op=document.getElementById('manip-operacao').value; if(!op){showNotification('Selecione uma operacao','error');return;}
+    let params={};const g=id=>document.getElementById(id)?.value;
+    switch(op){
+        case 'esquerda':case 'direita': params={coluna:g('mp-col'),n:parseInt(g('mp-n')),nova_coluna:g('mp-nova')||undefined};break;
+        case 'meio': params={coluna:g('mp-col'),inicio:parseInt(g('mp-inicio')),n:parseInt(g('mp-n')),nova_coluna:g('mp-nova')||undefined};break;
+        case 'tamanho': params={coluna:g('mp-col'),nova_coluna:g('mp-nova')||undefined};break;
+        case 'concatenar': params={colunas:getMultiSelect('mp-col'),separador:g('mp-sep')||'',nova_coluna:g('mp-nova')||'concat'};break;
+        case 'substituir_texto': params={coluna:g('mp-col'),antigo:g('mp-antigo'),novo:g('mp-novo'),nova_coluna:g('mp-nova')||undefined};break;
+        case 'se': params={condicao:g('mp-cond'),valor_verdadeiro:g('mp-vv'),valor_falso:g('mp-vf'),nova_coluna:g('mp-nova')||'resultado_se'};break;
+        case 'arred': params={coluna:g('mp-col'),casas:parseInt(g('mp-casas')),nova_coluna:g('mp-nova')||undefined};break;
+        case 'cont_se': params={coluna:g('mp-col'),criterio:g('mp-crit')};break;
+        case 'somase': params={coluna_valores:g('mp-colval'),coluna_criterios:g('mp-colcrit'),criterio:g('mp-crit')};break;
+        case 'coluna_calculada': params={nome:g('mp-nova'),expressao:g('mp-expr')};break;
+        case 'adicionar_coluna': params={nome:g('mp-nome'),valor:g('mp-valor')};break;
+        case 'renomear_coluna': params={mapeamento:{[g('mp-col')]:g('mp-novo')}};break;
+        case 'remover_coluna': params={colunas:[g('mp-col')]};break;
+        case 'ordenar_por': params={colunas:[g('mp-col')],ascendente:g('mp-asc')==='true'};break;
+        case 'reordenar_colunas': params={ordem:g('mp-ordem').split(',').map(s=>s.trim())};break;
+        case 'filtrar_linhas': params={condicao:g('mp-cond')};break;
+        case 'juntar': params={tabela:g('mp-tabela'),coluna_chave:g('mp-col'),tipo:g('mp-tipo')};break;
+        case 'agregar': params={colunas_grupo:g('mp-grupo').split(',').map(s=>s.trim()),coluna_alvo:g('mp-col'),funcao:g('mp-func')};break;
+        case 'procv': params={tabela_origem:g('mp-tabela'),coluna_chave:g('mp-col'),coluna_chave_origem:g('mp-chaveref'),coluna_valor_origem:g('mp-valorref')};break;
+        case 'indice_corresp': params={coluna_retorno:g('mp-colret'),valor_procurado:g('mp-valorproc'),coluna_busca:g('mp-colbusca')};break;
+        case 'corresp': params={valor:g('mp-valor'),coluna_busca:g('mp-col')};break;
+        case 'harmonica': params={coluna:g('mp-col')};break;
+        case 'correl': params={col_a:g('mp-cola'),col_b:g('mp-colb'),metodo:g('mp-metodo')||'pearson'};break;
+        case 'pearson': params={col_a:g('mp-cola'),col_b:g('mp-colb')};break;
+        case 'spearman': params={col_a:g('mp-cola'),col_b:g('mp-colb')};break;
+    }
+    etapasManip.push({operacao:op,params});renderFilaManip();showNotification('Etapa "'+op+'" adicionada','success');
+}
+function renderFilaManip(){const d=document.getElementById('manip-fila');if(!etapasManip.length){d.innerHTML='<div style="text-align:center;padding:24px;color:var(--text-muted);font-size:0.85rem">Nenhuma etapa adicionada</div>';return;}d.innerHTML=etapasManip.map((e,i)=>'<div class="item"><div class="item-info"><div class="item-icon blue">'+(i+1)+'</div><div><div style="font-weight:500;font-size:0.88rem">'+e.operacao+'</div><div style="font-size:0.78rem;color:var(--text-muted)">'+JSON.stringify(e.params).substring(0,80)+'</div></div></div><button class="btn btn-ghost btn-sm" onclick="etapasManip.splice('+i+',1);renderFilaManip()">&#10005;</button></div>').join('');}
+async function executarManipulacao(){
+    if(!etapasManip.length){showNotification('Nenhuma etapa pendente','error');return;}
+    for(const e of etapasManip)await fetch('/manipulacao/'+SID,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(e)});
+    try{const r=await fetch('/executar_manipulacao/'+SID,{method:'POST'});const j=await r.json();if(j.ok){etapasManip=[];renderFilaManip();document.getElementById('manip-result').style.display='block';document.getElementById('manip-result-list').innerHTML=j.resultados.map(r=>'<div class="item"><div class="item-info"><div class="item-icon green">&#10003;</div><div style="font-size:0.88rem">'+r+'</div></div></div>').join('');updateEstado();showNotification('Manipulacao executada!','success');}else{showNotification(j.mensagem,'error');}}catch(e){showNotification('Erro: '+e.message,'error');}
+}
+
+/* ── PREVIEW / EXPORTAR / ESTADO ─────────────────────────────── */
+async function carregarPreview(){try{const r=await fetch('/preview/'+SID);const j=await r.json();if(!j.ok){showNotification(j.mensagem,'error');return;}document.getElementById('preview-box').style.display='block';document.getElementById('preview-thead').innerHTML='<tr>'+j.colunas.map(c=>'<th>'+c+'</th>').join('')+'</tr>';document.getElementById('preview-tbody').innerHTML=j.linhas.map(l=>'<tr>'+l.map(v=>'<td>'+(v!=null?v:'')+'</td>').join('')+'</tr>').join('');document.getElementById('preview-count').textContent=j.linhas.length;document.getElementById('preview-total').textContent=j.total_linhas;}catch(e){showNotification('Erro: '+e.message,'error');}}
+async function exportarDados(){
+    const pasta=document.getElementById('pasta-destino').value.trim();
+    const url=pasta?'/exportar/'+SID+'?pasta='+encodeURIComponent(pasta):'/exportar/'+SID;
+    try{const r=await fetch(url);const j=await r.json();if(j.ok){
+        document.getElementById('export-result').style.display='block';
+        document.getElementById('export-file').textContent=j.arquivo+(j.pasta_destino?' em '+j.pasta_destino:'');
+        showNotification('Exportado com sucesso!','success');
+    }else{showNotification(j.mensagem,'error');}}catch(e){showNotification('Erro: '+e.message,'error');}
+}
+async function updateEstado(){try{const r=await fetch('/estado/'+SID);const j=await r.json();if(j.ok&&j.tem_dados){document.getElementById('estado-badge').style.display='';document.getElementById('estado-linhas').textContent=fmtNum(j.linhas);document.getElementById('estado-colunas').textContent=j.colunas;window.COLUNAS=j.nomes_colunas;}}catch(e){}}
+
+/* ── BROWSER DE PASTAS ──────────────────────────────────────── */
+let browserCaminhoAtual = '';
+function abrirBrowserPastas(){
+    const modal=document.getElementById('folder-browser-modal');
+    modal.classList.add('visible');
+    const atual=document.getElementById('pasta-destino').value.trim();
+    navegarBrowser(atual||'');
+}
+function fecharBrowserPastas(){
+    const modal=document.getElementById('folder-browser-modal');
+    modal.classList.remove('visible');
+}
+async function navegarBrowser(caminho){
+    const lista=document.getElementById('browser-lista');
+    lista.innerHTML='<div style="text-align:center;padding:24px;color:var(--text-muted)">Carregando...</div>';
+    try{
+        const r=await fetch('/listar_pastas?caminho='+encodeURIComponent(caminho));
+        const j=await r.json();
+        if(!j.ok){lista.innerHTML='<div style="text-align:center;padding:24px;color:#E74C3C">'+j.mensagem+'</div>';return;}
+        browserCaminhoAtual=j.caminho;
+        document.getElementById('browser-caminho').value=j.caminho;
+        document.getElementById('btn-pai').disabled=!j.pai;
+        if(!j.pastas.length){lista.innerHTML='<div style="text-align:center;padding:24px;color:var(--text-muted);font-size:0.85rem">Nenhuma subpasta</div>';return;}
+        lista.innerHTML=j.pastas.map(p=>
+            '<div class="folder-item" ondblclick="navegarBrowser(\''+p.caminho.replace(/\\/g,'\\\\').replace(/'/g,"\\'")+'\')">'+p.nome+'</div>'
+        ).join('');
+    }catch(e){lista.innerHTML='<div style="text-align:center;padding:24px;color:#E74C3C">Erro: '+e.message+'</div>';}
+}
+function navegarPai(){
+    const caminho=document.getElementById('browser-caminho').value;
+    const partes=caminho.split(/[\\/]/).filter(Boolean);
+    if(partes.length>1){partes.pop();navegarBrowser(partes[0]+'\\'+partes.slice(1).join('\\'));}else{navegarBrowser('');}
+}
+function confirmarPasta(){
+    document.getElementById('pasta-destino').value=browserCaminhoAtual;
+    fecharBrowserPastas();
+    showNotification('Pasta selecionada: '+browserCaminhoAtual,'success');
+}
+
+/* ── FORMULARES (limpeza/manipulacao) ──────────────────────── */
+function atualizarFormLimpeza() {
+    const op = document.getElementById('limp-operacao').value;
+    const col = typeof COLUNAS !== 'undefined' ? COLUNAS : [];
+    const div = document.getElementById('limp-params');
+    const colsOpts = col.map(c => '<option value="'+c+'">'+c+'</option>').join('');
+    const forms = {
+        remover_duplicatas: '<div class="form-group"><label>Colunas (vazio = todas)</label><select class="form-control" id="lp-col"><option value="">Todas</option>'+colsOpts+'</select></div>',
+        remover_nulos: '<div class="form-group"><label>Colunas</label><select class="form-control" id="lp-col" multiple style="height:100px">'+colsOpts+'</select></div>',
+        preencher_nulos: '<div class="form-group"><label>Colunas</label><select class="form-control" id="lp-col" multiple style="height:100px">'+colsOpts+'</select></div><div class="form-group"><label>Valor</label><input class="form-control" id="lp-valor" placeholder="0, NAO INFORMADO, mediana, moda"></div>',
+        remover_colunas_vazias: '<div class="form-group"><label>Limiar (0-1)</label><input class="form-control" id="lp-limiar" value="1.0" type="number" step="0.1" min="0" max="1"></div>',
+        substituir_valores: '<div class="form-group"><label>Colunas</label><select class="form-control" id="lp-col" multiple style="height:100px">'+colsOpts+'</select></div><div class="form-group"><label>Valor antigo</label><input class="form-control" id="lp-antigo"></div><div class="form-group"><label>Valor novo</label><input class="form-control" id="lp-novo"></div>',
+        substituir_regex: '<div class="form-group"><label>Colunas</label><select class="form-control" id="lp-col" multiple style="height:100px">'+colsOpts+'</select></div><div class="form-group"><label>Padrao regex</label><input class="form-control" id="lp-padrao"></div><div class="form-group"><label>Substituicao</label><input class="form-control" id="lp-novo"></div>',
+        normalizar_texto: '<div class="form-group"><label>Colunas</label><select class="form-control" id="lp-col" multiple style="height:100px">'+colsOpts+'</select></div><div class="form-group"><label>Modo</label><select class="form-control" id="lp-modo"><option value="upper">MAIUSCULO</option><option value="lower">minusculo</option></select></div>',
+        corrigir_tipo: '<div class="form-group"><label>Coluna</label><select class="form-control" id="lp-col">'+colsOpts+'</select></div><div class="form-group"><label>Tipo</label><select class="form-control" id="lp-tipo"><option value="numero">Numero</option><option value="texto">Texto</option><option value="data">Data</option></select></div>',
+        unificar_valores: '<div class="form-group"><label>Coluna</label><select class="form-control" id="lp-col">'+colsOpts+'</select></div><div class="form-group"><label>Valor correto</label><input class="form-control" id="lp-certo"></div><div class="form-group"><label>Variantes (virgula)</label><input class="form-control" id="lp-variantes"></div>',
+        formatar_brasileiro: '<div class="form-group"><label>Colunas</label><select class="form-control" id="lp-col" multiple style="height:100px">'+colsOpts+'</select></div><div class="form-group"><label>Casas decimais</label><input class="form-control" id="lp-casas" value="2" type="number"></div>',
+    };
+    div.innerHTML = forms[op] || '';
+}
+
+function atualizarFormManip() {
+    const op = document.getElementById('manip-operacao').value;
+    const col = typeof COLUNAS !== 'undefined' ? COLUNAS : [];
+    const div = document.getElementById('manip-params');
+    const c = col.map(x => '<option value="'+x+'">'+x+'</option>').join('');
+    const forms = {
+        esquerda: '<div class="form-group"><label>Coluna</label><select class="form-control" id="mp-col">'+c+'</select></div><div class="form-group"><label>N caracteres</label><input class="form-control" id="mp-n" type="number" value="3"></div><div class="form-group"><label>Nova coluna</label><input class="form-control" id="mp-nova"></div>',
+        direita: '<div class="form-group"><label>Coluna</label><select class="form-control" id="mp-col">'+c+'</select></div><div class="form-group"><label>N caracteres</label><input class="form-control" id="mp-n" type="number" value="3"></div><div class="form-group"><label>Nova coluna</label><input class="form-control" id="mp-nova"></div>',
+        meio: '<div class="form-group"><label>Coluna</label><select class="form-control" id="mp-col">'+c+'</select></div><div class="form-group"><label>Posicao inicial</label><input class="form-control" id="mp-inicio" type="number" value="1"></div><div class="form-group"><label>N caracteres</label><input class="form-control" id="mp-n" type="number" value="3"></div><div class="form-group"><label>Nova coluna</label><input class="form-control" id="mp-nova"></div>',
+        tamanho: '<div class="form-group"><label>Coluna</label><select class="form-control" id="mp-col">'+c+'</select></div><div class="form-group"><label>Nova coluna</label><input class="form-control" id="mp-nova"></div>',
+        concatenar: '<div class="form-group"><label>Colunas</label><select class="form-control" id="mp-col" multiple style="height:100px">'+c+'</select></div><div class="form-group"><label>Separador</label><input class="form-control" id="mp-sep"></div><div class="form-group"><label>Nova coluna</label><input class="form-control" id="mp-nova" value="concat"></div>',
+        substituir_texto: '<div class="form-group"><label>Coluna</label><select class="form-control" id="mp-col">'+c+'</select></div><div class="form-group"><label>Texto antigo</label><input class="form-control" id="mp-antigo"></div><div class="form-group"><label>Texto novo</label><input class="form-control" id="mp-novo"></div><div class="form-group"><label>Nova coluna</label><input class="form-control" id="mp-nova"></div>',
+        se: '<div class="form-group"><label>Condicao</label><input class="form-control" id="mp-cond"></div><div class="form-group"><label>Se VERDADEIRO</label><input class="form-control" id="mp-vv"></div><div class="form-group"><label>Se FALSO</label><input class="form-control" id="mp-vf"></div><div class="form-group"><label>Nova coluna</label><input class="form-control" id="mp-nova" value="resultado_se"></div>',
+        arred: '<div class="form-group"><label>Coluna</label><select class="form-control" id="mp-col">'+c+'</select></div><div class="form-group"><label>Casas</label><input class="form-control" id="mp-casas" type="number" value="0"></div><div class="form-group"><label>Nova coluna</label><input class="form-control" id="mp-nova"></div>',
+        cont_se: '<div class="form-group"><label>Coluna</label><select class="form-control" id="mp-col">'+c+'</select></div><div class="form-group"><label>Criterio</label><input class="form-control" id="mp-crit"></div>',
+        somase: '<div class="form-group"><label>Coluna valores</label><select class="form-control" id="mp-colval">'+c+'</select></div><div class="form-group"><label>Coluna criterios</label><select class="form-control" id="mp-colcrit">'+c+'</select></div><div class="form-group"><label>Criterio</label><input class="form-control" id="mp-crit"></div>',
+        coluna_calculada: '<div class="form-group"><label>Nova coluna</label><input class="form-control" id="mp-nova"></div><div class="form-group"><label>Expressao</label><textarea class="form-control" id="mp-expr" rows="3"></textarea></div>',
+        adicionar_coluna: '<div class="form-group"><label>Nome</label><input class="form-control" id="mp-nome"></div><div class="form-group"><label>Valor fixo ou expressao</label><input class="form-control" id="mp-valor"></div>',
+        renomear_coluna: '<div class="form-group"><label>De</label><select class="form-control" id="mp-col">'+c+'</select></div><div class="form-group"><label>Para</label><input class="form-control" id="mp-novo"></div>',
+        remover_coluna: '<div class="form-group"><label>Coluna</label><select class="form-control" id="mp-col">'+c+'</select></div>',
+        ordenar_por: '<div class="form-group"><label>Coluna</label><select class="form-control" id="mp-col">'+c+'</select></div><div class="form-group"><label>Direcao</label><select class="form-control" id="mp-asc"><option value="true">Crescente</option><option value="false">Decrescente</option></select></div>',
+        reordenar_colunas: '<div class="form-group"><label>Ordem (virgula)</label><input class="form-control" id="mp-ordem"></div>',
+        filtrar_linhas: '<div class="form-group"><label>Condicao</label><input class="form-control" id="mp-cond"></div>',
+        juntar: '<div class="form-group"><label>Tabela referencia</label><input class="form-control" id="mp-tabela"></div><div class="form-group"><label>Coluna chave</label><select class="form-control" id="mp-col">'+c+'</select></div><div class="form-group"><label>Tipo</label><select class="form-control" id="mp-tipo"><option value="left">Left</option><option value="inner">Inner</option><option value="outer">Outer</option></select></div>',
+        agregar: '<div class="form-group"><label>Colunas grupo (virgula)</label><input class="form-control" id="mp-grupo"></div><div class="form-group"><label>Coluna alvo</label><select class="form-control" id="mp-col">'+c+'</select></div><div class="form-group"><label>Funcao</label><select class="form-control" id="mp-func"><option value="sum">Soma</option><option value="mean">Media</option><option value="count">Contagem</option><option value="min">Min</option><option value="max">Max</option></select></div>',
+        procv: '<div class="form-group"><label>Tabela referencia</label><input class="form-control" id="mp-tabela"></div><div class="form-group"><label>Coluna chave (atual)</label><select class="form-control" id="mp-col">'+c+'</select></div><div class="form-group"><label>Coluna chave ref</label><input class="form-control" id="mp-chaveref"></div><div class="form-group"><label>Coluna valor ref</label><input class="form-control" id="mp-valorref"></div>',
+        indice_corresp: '<div class="form-group"><label>Coluna retorno</label><select class="form-control" id="mp-colret">'+c+'</select></div><div class="form-group"><label>Valor procurado (fixo ou coluna)</label><input class="form-control" id="mp-valorproc" placeholder="ex: SIM ou nome_coluna"></div><div class="form-group"><label>Coluna busca</label><select class="form-control" id="mp-colbusca">'+c+'</select></div><div style="font-size:0.78rem;color:var(--text-muted);margin-top:4px">=INDICE(col_ret; CORRESP(valor; col_busca; 0))</div>',
+        corresp: '<div class="form-group"><label>Coluna busca</label><select class="form-control" id="mp-col">'+c+'</select></div><div class="form-group"><label>Valor</label><input class="form-control" id="mp-valor"></div>',
+        harmonica: '<div class="form-group"><label>Coluna</label><select class="form-control" id="mp-col">'+c+'</select></div><div style="font-size:0.78rem;color:var(--text-muted);margin-top:4px">N / soma(1/x) — media harmonica</div>',
+        correl: '<div class="form-group"><label>Coluna A</label><select class="form-control" id="mp-cola">'+c+'</select></div><div class="form-group"><label>Coluna B</label><select class="form-control" id="mp-colb">'+c+'</select></div><div class="form-group"><label>Metodo</label><select class="form-control" id="mp-metodo"><option value="pearson">Pearson</option><option value="spearman">Spearman</option><option value="kendall">Kendall</option></select></div>',
+        pearson: '<div class="form-group"><label>Coluna A</label><select class="form-control" id="mp-cola">'+c+'</select></div><div class="form-group"><label>Coluna B</label><select class="form-control" id="mp-colb">'+c+'</select></div><div style="font-size:0.78rem;color:var(--text-muted);margin-top:4px">Coeficiente de Pearson (r): -1 a +1</div>',
+        spearman: '<div class="form-group"><label>Coluna A</label><select class="form-control" id="mp-cola">'+c+'</select></div><div class="form-group"><label>Coluna B</label><select class="form-control" id="mp-colb">'+c+'</select></div><div style="font-size:0.78rem;color:var(--text-muted);margin-top:4px">Correlacao de Spearman (rho) — postos</div>',
+    };
+    div.innerHTML = forms[op] || '';
+}
+
+/* ── INIT ────────────────────────────────────────────────────── */
+window.COLUNAS = {{ colunas | tojson }};
+</script>
+
+</body>
+</html>
