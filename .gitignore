@@ -1,8 +1,10 @@
 __pycache__/
 *.pyc
-data/raw/*.csv
-data/processed/*.csv
-data/logs/*.log
+data/raw/
+data/processed/
+data/logs/
+data/uploads/
+temp/
 !data/raw/.gitkeep
 !data/processed/.gitkeep
 !data/logs/.gitkeep

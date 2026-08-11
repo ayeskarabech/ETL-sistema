@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ETL NGR-SEE</title>
+    <title>RobEdu - Sistema de ETL</title>
     <link rel="stylesheet" href="/static/css/style.css">
 </head>
 <body>
@@ -13,31 +13,31 @@
     <!-- ═══ SIDEBAR ═══ -->
     <aside class="sidebar">
         <div class="sidebar-logo">
-            <img src="/static/img/logo.png" alt="Logo" onerror="this.style.display='none'">
+            <div class="logo-mark">R</div>
             <div class="logo-text">
-                <span class="empresa">NGR-SEE</span>
-                <span class="sistema">Sistema ETL</span>
+                <span class="empresa">RobEdu</span>
+                <span class="sistema">Sistema de ETL</span>
             </div>
         </div>
 
         <nav class="sidebar-nav">
             <a href="#" class="nav-item active" data-tab="tab-carregar">
-                <span class="nav-icon">&#128193;</span>
+                <span class="nav-icon" data-icon="upload"></span>
                 <span class="nav-label">Carregar</span>
                 <span class="nav-step">1</span>
             </a>
             <a href="#" class="nav-item" data-tab="tab-diagnostico">
-                <span class="nav-icon">&#128269;</span>
+                <span class="nav-icon" data-icon="search"></span>
                 <span class="nav-label">Diagnostico</span>
                 <span class="nav-step">2</span>
             </a>
             <a href="#" class="nav-item" data-tab="tab-limpeza">
-                <span class="nav-icon">&#129529;</span>
+                <span class="nav-icon" data-icon="clean"></span>
                 <span class="nav-label">Limpeza</span>
                 <span class="nav-step">3</span>
             </a>
             <a href="#" class="nav-item" data-tab="tab-manipulacao">
-                <span class="nav-icon">&#9881;</span>
+                <span class="nav-icon" data-icon="settings"></span>
                 <span class="nav-label">Manipulacao</span>
                 <span class="nav-step">4</span>
             </a>
@@ -45,7 +45,7 @@
             <div class="nav-divider"></div>
 
             <a href="#" class="nav-item" data-tab="tab-resultado">
-                <span class="nav-icon">&#128230;</span>
+                <span class="nav-icon" data-icon="package"></span>
                 <span class="nav-label">Resultado</span>
                 <span class="nav-step">5</span>
             </a>
@@ -63,7 +63,7 @@
     <main class="main-content">
 
         <div class="page-header">
-            <h1>ETL <span>NGR-SEE</span></h1>
+            <h1><span class="header-logo">R</span> RobEdu <span class="header-sub">Sistema de ETL</span></h1>
             <div class="header-actions">
                 <span id="estado-badge" class="badge badge-info" style="display:none">
                     <span id="estado-linhas">0</span> linhas | <span id="estado-colunas">0</span> colunas
@@ -79,21 +79,33 @@
         <div class="tab-panel active" id="tab-carregar">
             <div class="glass-card">
                 <div class="glass-card-header">
-                    <h2><span class="card-icon">&#128193;</span> Carregar Dados</h2>
+                    <h2><span class="card-icon" data-icon="upload"></span> Carregar Dados</h2>
                 </div>
 
                 <div class="upload-area" id="upload-area">
                     <input type="file" id="file-input" accept=".csv,.xlsx,.xls" style="display:none">
-                    <div class="upload-icon">&#128228;</div>
+                    <div class="upload-icon" data-icon="upload-lg"></div>
                     <div class="upload-text">Arraste um arquivo ou clique para selecionar</div>
                     <div class="upload-hint">Formatos aceitos: .csv, .xlsx, .xls</div>
+                </div>
+
+                <div id="upload-error" style="margin-top:16px; display:none">
+                    <div class="glass-card" style="margin-bottom:0; border-left:4px solid #E74C3C">
+                        <div style="display:flex; align-items:center; gap:12px">
+                            <span class="icon-error" data-icon="alert"></span>
+                            <div>
+                                <div style="font-weight:600; color:#C0392B" id="upload-error-title">Erro no upload</div>
+                                <div style="font-size:0.85rem; color:var(--text-muted); margin-top:4px" id="upload-error-msg"></div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
 
                 <div id="upload-status" style="margin-top:20px; display:none">
                     <div class="glass-card" style="margin-bottom:0">
                         <div style="display:flex; align-items:center; justify-content:space-between">
                             <div>
-                                <span class="badge badge-success">&#10003; Arquivo carregado</span>
+                                <span class="badge badge-success"><span class="icon-badge" data-icon="check"></span> Arquivo carregado</span>
                                 <div style="margin-top:8px; font-weight:600; color:var(--blue)" id="upload-nome"></div>
                             </div>
                             <div style="text-align:right">
@@ -116,9 +128,9 @@
         <div class="tab-panel" id="tab-diagnostico">
             <div class="glass-card">
                 <div class="glass-card-header">
-                    <h2><span class="card-icon">&#128269;</span> Diagnostico da Base</h2>
+                    <h2><span class="card-icon" data-icon="search"></span> Diagnostico da Base</h2>
                     <button class="btn btn-primary" onclick="runDiagnostico()" id="btn-diag">
-                        &#9654; Analisar
+                        <span class="icon-btn" data-icon="play"></span> Analisar
                     </button>
                 </div>
 
@@ -141,7 +153,7 @@
                         </div>
                         <div class="stat-card">
                             <div class="stat-label">Status</div>
-                            <div class="stat-value" id="diag-status" style="font-size:1rem">—</div>
+                            <div class="stat-value" id="diag-status" style="font-size:1rem">-</div>
                         </div>
                     </div>
 
@@ -154,7 +166,7 @@
                         <div class="glass-card" style="margin-bottom:0">
                             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px">
                                 <h3 style="font-size:0.95rem; color:var(--text-primary)">Sugestoes de Tratamento</h3>
-                                <button class="btn btn-accent btn-sm" onclick="aplicarSugestoes()">&#10003; Aplicar Todas</button>
+                                <button class="btn btn-accent btn-sm" onclick="aplicarSugestoes()"><span class="icon-btn" data-icon="check"></span> Aplicar Todas</button>
                             </div>
                             <div class="item-list" id="diag-sugestoes-list"></div>
                         </div>
@@ -169,14 +181,13 @@
         <div class="tab-panel" id="tab-limpeza">
             <div class="glass-card">
                 <div class="glass-card-header">
-                    <h2><span class="card-icon">&#129529;</span> Limpeza de Dados</h2>
+                    <h2><span class="card-icon" data-icon="clean"></span> Limpeza de Dados</h2>
                     <button class="btn btn-primary btn-sm" onclick="executarLimpeza()" id="btn-exec-limp">
-                        &#9654; Executar Etapas
+                        <span class="icon-btn" data-icon="play"></span> Executar Etapas
                     </button>
                 </div>
 
                 <div class="grid-2">
-                    <!-- Formulário de limpeza -->
                     <div>
                         <div class="form-group">
                             <label>Operacao</label>
@@ -198,11 +209,10 @@
                         <div id="limp-params"></div>
 
                         <button class="btn btn-secondary" onclick="adicionarLimpeza()" style="margin-top:8px">
-                            &#43; Adicionar Etapa
+                            <span class="icon-btn" data-icon="plus"></span> Adicionar Etapa
                         </button>
                     </div>
 
-                    <!-- Fila de etapas -->
                     <div>
                         <div style="font-size:0.85rem; font-weight:600; color:var(--text-secondary); margin-bottom:10px">
                             Etapas Pendentes
@@ -215,7 +225,6 @@
                     </div>
                 </div>
 
-                <!-- Resultado da execucao -->
                 <div id="limp-result" style="display:none; margin-top:20px">
                     <div style="font-size:0.85rem; font-weight:600; color:var(--text-secondary); margin-bottom:10px">
                         Resultado
@@ -231,14 +240,13 @@
         <div class="tab-panel" id="tab-manipulacao">
             <div class="glass-card">
                 <div class="glass-card-header">
-                    <h2><span class="card-icon">&#9881;</span> Manipulacao / Formulas</h2>
+                    <h2><span class="card-icon" data-icon="settings"></span> Manipulacao / Formulas</h2>
                     <button class="btn btn-primary btn-sm" onclick="executarManipulacao()" id="btn-exec-manip">
-                        &#9654; Executar Etapas
+                        <span class="icon-btn" data-icon="play"></span> Executar Etapas
                     </button>
                 </div>
 
                 <div class="grid-2">
-                    <!-- Formulario -->
                     <div>
                         <div class="form-group">
                             <label>Operacao</label>
@@ -290,11 +298,10 @@
                         <div id="manip-params"></div>
 
                         <button class="btn btn-secondary" onclick="adicionarManipulacao()" style="margin-top:8px">
-                            &#43; Adicionar Etapa
+                            <span class="icon-btn" data-icon="plus"></span> Adicionar Etapa
                         </button>
                     </div>
 
-                    <!-- Fila -->
                     <div>
                         <div style="font-size:0.85rem; font-weight:600; color:var(--text-secondary); margin-bottom:10px">
                             Etapas Pendentes
@@ -321,109 +328,75 @@
         <!-- ═══════════════════════════════════════════════════════════════════ -->
         <div class="tab-panel" id="tab-resultado">
 
-            <!-- Header com acoes -->
             <div class="glass-card-header" style="margin-bottom:20px">
                 <h1 style="font-size:1.4rem">Diagnostico <span>Final</span></h1>
                 <div style="display:flex; gap:8px">
-                    <button class="btn btn-primary btn-sm" onclick="carregarDiagnosticoFinal()">&#8635; Atualizar</button>
-                    <button class="btn btn-secondary btn-sm" onclick="carregarPreview()">&#128269; Preview</button>
-                    <button class="btn btn-accent btn-sm" onclick="abrirBrowserPastas()">&#128193; Escolher Pasta</button>
-                    <button class="btn btn-accent btn-sm" onclick="exportarDados()">&#128229; Exportar CSV</button>
+                    <button class="btn btn-primary btn-sm" onclick="carregarDiagnosticoFinal()"><span class="icon-btn" data-icon="refresh"></span> Atualizar</button>
+                    <button class="btn btn-secondary btn-sm" onclick="carregarPreview()"><span class="icon-btn" data-icon="eye"></span> Preview</button>
+                    <button class="btn btn-accent btn-sm" onclick="abrirBrowserPastas()"><span class="icon-btn" data-icon="folder"></span> Escolher Pasta</button>
+                    <button class="btn btn-accent btn-sm" onclick="exportarDados()"><span class="icon-btn" data-icon="download"></span> Exportar CSV</button>
                 </div>
             </div>
 
-            <!-- Pasta de destino -->
             <div class="glass-card" style="margin-bottom:20px">
                 <div style="font-size:0.9rem; font-weight:600; color:var(--text-primary); margin-bottom:10px">Pasta de Destino</div>
                 <div style="display:flex; gap:8px; align-items:center">
                     <input class="form-control" id="pasta-destino" placeholder="Selecione uma pasta..." readonly style="flex:1">
-                    <button class="btn btn-secondary btn-sm" onclick="abrirBrowserPastas()">&#128193; Navegar</button>
+                    <button class="btn btn-secondary btn-sm" onclick="abrirBrowserPastas()"><span class="icon-btn" data-icon="folder"></span> Navegar</button>
                 </div>
                 <div style="font-size:0.78rem; color:var(--text-muted); margin-top:6px">
-                    Padrão: <span id="pasta-default" style="font-family:monospace">{{ pasta_processed }}</span>
+                    Padrao: <span id="pasta-default" style="font-family:monospace">{{ pasta_processed }}</span>
                 </div>
             </div>
 
-            <!-- Modal Browser de Pastas -->
             <div id="folder-browser-modal" class="modal-overlay">
                 <div class="glass-card modal-card">
                     <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px">
                         <h3 style="font-size:1rem; color:var(--text-primary); margin:0">Navegar Pastas</h3>
-                        <button class="btn btn-ghost btn-sm" onclick="fecharBrowserPastas()">&#10005;</button>
+                        <button class="btn btn-ghost btn-sm" onclick="fecharBrowserPastas()"><span class="icon-btn" data-icon="close"></span></button>
                     </div>
                     <div style="display:flex; gap:6px; margin-bottom:12px; align-items:center">
-                        <button class="btn btn-ghost btn-sm" id="btn-pai" onclick="navegarPai()">&#9664;</button>
+                        <button class="btn btn-ghost btn-sm" id="btn-pai" onclick="navegarPai()"><span class="icon-btn" data-icon="arrow-left"></span></button>
                         <input class="form-control" id="browser-caminho" readonly style="flex:1; font-family:monospace; font-size:0.82rem">
                     </div>
                     <div class="folder-list" id="browser-lista" style="max-height:350px; overflow-y:auto"></div>
                     <div style="display:flex; justify-content:flex-end; gap:8px; margin-top:16px">
                         <button class="btn btn-secondary btn-sm" onclick="fecharBrowserPastas()">Cancelar</button>
-                        <button class="btn btn-accent btn-sm" onclick="confirmarPasta()">&#10003; Selecionar Esta Pasta</button>
+                        <button class="btn btn-accent btn-sm" onclick="confirmarPasta()"><span class="icon-btn" data-icon="check"></span> Selecionar Esta Pasta</button>
                     </div>
                 </div>
             </div>
 
-            <!-- Comparacao ANTES / DEPOIS -->
             <div id="diag-final-loading" style="text-align:center; padding:40px">
                 <div style="color:var(--text-muted); font-size:0.9rem">Clique em "Atualizar" ou va ate esta aba para carregar o diagnostico.</div>
             </div>
 
             <div id="diag-final-conteudo" style="display:none">
 
-                <!-- Cards de comparacao -->
                 <div class="grid-2" style="margin-bottom:20px">
                     <div class="glass-card" style="margin-bottom:0">
-                        <div style="font-size:0.8rem; font-weight:600; color:var(--text-muted); text-transform:uppercase; letter-spacing:0.5px; margin-bottom:14px">&#9664; Estado Inicial</div>
+                        <div style="font-size:0.8rem; font-weight:600; color:var(--text-muted); text-transform:uppercase; letter-spacing:0.5px; margin-bottom:14px"><span class="icon-inline" data-icon="arrow-left"></span> Estado Inicial</div>
                         <div class="grid-2" style="gap:12px">
-                            <div>
-                                <div class="stat-label">Linhas</div>
-                                <div class="stat-value" id="df-linhas-antes" style="font-size:1.4rem">0</div>
-                            </div>
-                            <div>
-                                <div class="stat-label">Colunas</div>
-                                <div class="stat-value" id="df-colunas-antes" style="font-size:1.4rem">0</div>
-                            </div>
-                            <div>
-                                <div class="stat-label">Nulos</div>
-                                <div class="stat-value" id="df-nulos-antes" style="font-size:1.4rem">0</div>
-                            </div>
-                            <div>
-                                <div class="stat-label">Duplicatas</div>
-                                <div class="stat-value" id="df-dups-antes" style="font-size:1.4rem">0</div>
-                            </div>
+                            <div><div class="stat-label">Linhas</div><div class="stat-value" id="df-linhas-antes" style="font-size:1.4rem">0</div></div>
+                            <div><div class="stat-label">Colunas</div><div class="stat-value" id="df-colunas-antes" style="font-size:1.4rem">0</div></div>
+                            <div><div class="stat-label">Nulos</div><div class="stat-value" id="df-nulos-antes" style="font-size:1.4rem">0</div></div>
+                            <div><div class="stat-label">Duplicatas</div><div class="stat-value" id="df-dups-antes" style="font-size:1.4rem">0</div></div>
                         </div>
-                        <div style="margin-top:12px; font-size:0.78rem; color:var(--text-muted)">
-                            Memoria: <span id="df-mem-antes">0</span> MB
-                        </div>
+                        <div style="margin-top:12px; font-size:0.78rem; color:var(--text-muted)">Memoria: <span id="df-mem-antes">0</span> MB</div>
                     </div>
 
                     <div class="glass-card" style="margin-bottom:0; border-left:4px solid var(--yellow)">
-                        <div style="font-size:0.8rem; font-weight:600; color:var(--text-muted); text-transform:uppercase; letter-spacing:0.5px; margin-bottom:14px">&#9654; Estado Final</div>
+                        <div style="font-size:0.8rem; font-weight:600; color:var(--text-muted); text-transform:uppercase; letter-spacing:0.5px; margin-bottom:14px"><span class="icon-inline" data-icon="arrow-right"></span> Estado Final</div>
                         <div class="grid-2" style="gap:12px">
-                            <div>
-                                <div class="stat-label">Linhas</div>
-                                <div class="stat-value" id="df-linhas-depois" style="font-size:1.4rem">0</div>
-                            </div>
-                            <div>
-                                <div class="stat-label">Colunas</div>
-                                <div class="stat-value" id="df-colunas-depois" style="font-size:1.4rem">0</div>
-                            </div>
-                            <div>
-                                <div class="stat-label">Nulos</div>
-                                <div class="stat-value" id="df-nulos-depois" style="font-size:1.4rem">0</div>
-                            </div>
-                            <div>
-                                <div class="stat-label">Duplicatas</div>
-                                <div class="stat-value" id="df-dups-depois" style="font-size:1.4rem">0</div>
-                            </div>
+                            <div><div class="stat-label">Linhas</div><div class="stat-value" id="df-linhas-depois" style="font-size:1.4rem">0</div></div>
+                            <div><div class="stat-label">Colunas</div><div class="stat-value" id="df-colunas-depois" style="font-size:1.4rem">0</div></div>
+                            <div><div class="stat-label">Nulos</div><div class="stat-value" id="df-nulos-depois" style="font-size:1.4rem">0</div></div>
+                            <div><div class="stat-label">Duplicatas</div><div class="stat-value" id="df-dups-depois" style="font-size:1.4rem">0</div></div>
                         </div>
-                        <div style="margin-top:12px; font-size:0.78rem; color:var(--text-muted)">
-                            Memoria: <span id="df-mem-depois">0</span> MB
-                        </div>
+                        <div style="margin-top:12px; font-size:0.78rem; color:var(--text-muted)">Memoria: <span id="df-mem-depois">0</span> MB</div>
                     </div>
                 </div>
 
-                <!-- Variacoes resumidas -->
                 <div class="grid-4" style="margin-bottom:20px">
                     <div class="stat-card">
                         <div class="stat-label">Linhas</div>
@@ -444,19 +417,16 @@
                     </div>
                 </div>
 
-                <!-- Colunas adicionadas / removidas -->
                 <div class="glass-card" style="margin-bottom:20px" id="df-colunas-box" style="display:none">
                     <div style="font-size:0.9rem; font-weight:600; color:var(--text-primary); margin-bottom:12px">Mudancas na Estrutura</div>
                     <div id="df-colunas-info" style="font-size:0.85rem; color:var(--text-secondary)"></div>
                 </div>
 
-                <!-- Historico detalhado passo a passo -->
                 <div class="glass-card" style="margin-bottom:20px">
                     <div style="font-size:0.9rem; font-weight:600; color:var(--text-primary); margin-bottom:16px">Historico Detalhado</div>
                     <div id="df-historico" class="item-list"></div>
                 </div>
 
-                <!-- Preview Table -->
                 <div id="preview-box" style="display:none">
                     <div class="glass-card" style="margin-bottom:0">
                         <div style="font-size:0.9rem; font-weight:600; color:var(--text-primary); margin-bottom:12px">Preview dos Dados</div>
@@ -472,14 +442,25 @@
                     </div>
                 </div>
 
-                <!-- Export Result -->
                 <div id="export-result" style="display:none; margin-top:20px">
                     <div class="glass-card" style="margin-bottom:0; border-left:4px solid #2ECC71">
                         <div style="display:flex; align-items:center; gap:12px">
-                            <span style="font-size:1.4rem">&#9989;</span>
+                            <span class="icon-success" data-icon="check-circle"></span>
                             <div>
                                 <div style="font-weight:600; color:var(--blue)">Exportado com sucesso</div>
                                 <div style="font-size:0.85rem; color:var(--text-muted); margin-top:4px" id="export-file"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="export-error" style="display:none; margin-top:20px">
+                    <div class="glass-card" style="margin-bottom:0; border-left:4px solid #E74C3C">
+                        <div style="display:flex; align-items:center; gap:12px">
+                            <span class="icon-error" data-icon="alert"></span>
+                            <div>
+                                <div style="font-weight:600; color:#C0392B">Erro ao exportar</div>
+                                <div style="font-size:0.85rem; color:var(--text-muted); margin-top:4px" id="export-error-msg"></div>
                             </div>
                         </div>
                     </div>
@@ -492,30 +473,49 @@
 </div>
 
 <script>
-/* ═══ ETL NGR-SEE — Tudo-em-um (sem dependencia de app.js) ═══ */
+/* ═══ SVG ICONS ═══ */
+const ICONS = {
+    upload: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>',
+    'upload-lg': '<svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>',
+    search: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>',
+    clean: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>',
+    settings: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>',
+    package: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="16.5" y1="9.4" x2="7.5" y2="4.21"/><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg>',
+    check: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>',
+    'check-circle': '<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#2ECC71" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>',
+    play: '<svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" stroke="none"><polygon points="5 3 19 12 5 21 5 3"/></svg>',
+    refresh: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>',
+    eye: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>',
+    folder: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>',
+    'folder-item': '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>',
+    download: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>',
+    'arrow-left': '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>',
+    'arrow-right': '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>',
+    close: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>',
+    plus: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>',
+    alert: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#E74C3C" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>',
+    x: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>',
+    'chevron-down': '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>',
+};
+
+function icon(name, cls) {
+    const svg = ICONS[name] || '';
+    if (cls) return '<span class="' + cls + '">' + svg + '</span>';
+    return svg;
+}
+
+/* ═══ ETL RobEdu - Tudo-em-um ═══ */
 const SID = '{{ session_id }}';
 let etapasLimpeza = [];
 let etapasManip = [];
 
-/* ── UTILS ──────────────────────────────────────────────────── */
-function fmtNum(n) { return (n === null || n === undefined) ? '0' : Number(n).toLocaleString('pt-BR'); }
-function getMultiSelect(id) { const el = document.getElementById(id); return el ? Array.from(el.selectedOptions).map(o => o.value) : []; }
-function showNotification(msg, tipo = 'info') {
-    const n = document.createElement('div');
-    n.style.cssText = `position:fixed;top:20px;right:20px;z-index:2000;padding:14px 24px;border-radius:12px;background:rgba(255,255,255,0.85);backdrop-filter:blur(20px);border:1px solid rgba(31,67,140,0.1);box-shadow:0 8px 30px rgba(31,67,140,0.12);font-family:'Inter',sans-serif;font-size:0.9rem;font-weight:500;animation:fadeIn 0.3s ease;border-left:4px solid ${tipo==='success'?'#2ECC71':tipo==='error'?'#E74C3C':'#1F438C'}`;
-    n.textContent = msg;
-    document.body.appendChild(n);
-    setTimeout(() => n.remove(), 4000);
-}
-function showPanel(id) {
-    document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
-    document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
-    const p = document.getElementById(id); if (p) p.classList.add('active');
-    const nav = document.querySelector(`.nav-item[data-tab="${id}"]`); if (nav) nav.classList.add('active');
-}
-
-/* ── NAV SIDEBAR ────────────────────────────────────────────── */
+/* ── INIT ICONS ─────────────────────────────────────────────── */
 document.addEventListener('DOMContentLoaded', () => {
+    document.querySelectorAll('[data-icon]').forEach(el => {
+        const name = el.getAttribute('data-icon');
+        if (ICONS[name]) el.innerHTML = ICONS[name];
+    });
+
     document.querySelectorAll('.nav-item[data-tab]').forEach(item => {
         item.addEventListener('click', e => {
             e.preventDefault();
@@ -529,6 +529,24 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 });
 
+/* ── UTILS ──────────────────────────────────────────────────── */
+function fmtNum(n) { return (n === null || n === undefined) ? '0' : Number(n).toLocaleString('pt-BR'); }
+function getMultiSelect(id) { const el = document.getElementById(id); return el ? Array.from(el.selectedOptions).map(o => o.value) : []; }
+function showNotification(msg, tipo = 'info') {
+    const n = document.createElement('div');
+    const colors = { success: '#2ECC71', error: '#E74C3C', warning: '#F5D33F', info: '#1F438C' };
+    n.style.cssText = 'position:fixed;top:20px;right:20px;z-index:2000;padding:14px 24px;border-radius:12px;background:rgba(255,255,255,0.92);backdrop-filter:blur(20px);border:1px solid rgba(31,67,140,0.1);box-shadow:0 8px 32px rgba(31,67,140,0.15);font-family:Inter,sans-serif;font-size:0.88rem;font-weight:500;animation:fadeIn 0.3s ease;border-left:4px solid ' + (colors[tipo] || colors.info);
+    n.textContent = msg;
+    document.body.appendChild(n);
+    setTimeout(() => n.remove(), 4000);
+}
+function showPanel(id) {
+    document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+    document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+    const p = document.getElementById(id); if (p) p.classList.add('active');
+    const nav = document.querySelector(`.nav-item[data-tab="${id}"]`); if (nav) nav.classList.add('active');
+}
+
 /* ── UPLOAD ──────────────────────────────────────────────────── */
 const uploadArea = document.getElementById('upload-area');
 const fileInput = document.getElementById('file-input');
@@ -538,12 +556,31 @@ uploadArea.addEventListener('dragleave', () => uploadArea.classList.remove('drag
 uploadArea.addEventListener('drop', e => { e.preventDefault(); uploadArea.classList.remove('dragover'); if (e.dataTransfer.files.length) { fileInput.files = e.dataTransfer.files; uploadFile(e.dataTransfer.files[0]); } });
 fileInput.addEventListener('change', () => { if (fileInput.files.length) uploadFile(fileInput.files[0]); });
 
+function resetUploadUI() {
+    uploadArea.querySelector('.upload-icon').innerHTML = ICONS['upload-lg'];
+    uploadArea.querySelector('.upload-text').textContent = 'Arraste ou clique para selecionar';
+    uploadArea.querySelector('.upload-hint').textContent = 'Formatos aceitos: .csv, .xlsx, .xls';
+    uploadArea.style.pointerEvents = '';
+    document.getElementById('upload-error').style.display = 'none';
+}
+
+function showUploadError(msg) {
+    document.getElementById('upload-error').style.display = 'block';
+    document.getElementById('upload-error-msg').textContent = msg;
+    uploadArea.querySelector('.upload-icon').innerHTML = ICONS['upload-lg'];
+    uploadArea.querySelector('.upload-text').textContent = 'Arraste ou clique para selecionar';
+    uploadArea.querySelector('.upload-hint').textContent = 'Formatos aceitos: .csv, .xlsx, .xls';
+    uploadArea.style.pointerEvents = '';
+}
+
 async function uploadFile(file) {
     const fd = new FormData(); fd.append('arquivo', file);
     const sizeMB = (file.size / 1024 / 1024).toFixed(1);
+    uploadArea.querySelector('.upload-icon').innerHTML = ICONS['upload-lg'];
     uploadArea.querySelector('.upload-text').innerHTML = 'Carregando<span class="loading-dots"></span>';
     uploadArea.querySelector('.upload-hint').textContent = sizeMB + ' MB';
     uploadArea.style.pointerEvents = 'none';
+    document.getElementById('upload-error').style.display = 'none';
     const ctrl = new AbortController();
     const tid = setTimeout(() => ctrl.abort(), 600000);
     try {
@@ -555,13 +592,27 @@ async function uploadFile(file) {
             document.getElementById('upload-nome').textContent = file.name;
             document.getElementById('upload-linhas').textContent = fmtNum(j.linhas);
             document.getElementById('upload-colunas').innerHTML = j.colunas.map(c => '<span class="badge badge-info">'+c+'</span>').join('');
-            uploadArea.querySelector('.upload-icon').innerHTML = '&#10003;';
+            uploadArea.querySelector('.upload-icon').innerHTML = ICONS.check;
+            uploadArea.querySelector('.upload-icon').style.color = '#2ECC71';
             uploadArea.querySelector('.upload-text').textContent = 'Arquivo carregado!';
             uploadArea.querySelector('.upload-hint').textContent = '';
             updateEstado();
             showNotification('Arquivo carregado com sucesso!', 'success');
-        } else { showNotification('Erro: ' + j.mensagem, 'error'); uploadArea.querySelector('.upload-text').textContent = 'Arraste ou clique para selecionar'; uploadArea.querySelector('.upload-hint').textContent = 'Formatos aceitos: .csv, .xlsx, .xls'; uploadArea.style.pointerEvents = ''; }
-    } catch (e) { clearTimeout(tid); showNotification(e.name==='AbortError'?'Tempo esgotado.':'Erro: '+e.message, 'error'); uploadArea.querySelector('.upload-text').textContent = 'Arraste ou clique para selecionar'; uploadArea.querySelector('.upload-hint').textContent = 'Formatos aceitos: .csv, .xlsx, .xls'; uploadArea.style.pointerEvents = ''; }
+        } else {
+            showUploadError(j.mensagem || 'Erro desconhecido ao carregar arquivo.');
+            showNotification('Falha no upload', 'error');
+        }
+    } catch (e) {
+        clearTimeout(tid);
+        if (e.name === 'AbortError') {
+            showUploadError('Tempo limite excedido (10 minutos). Arquivo pode ser grande demais.');
+        } else if (e.message.includes('Failed to fetch') || e.message.includes('NetworkError')) {
+            showUploadError('Falha de conexao. Verifique se o servidor esta rodando.');
+        } else {
+            showUploadError('Erro: ' + e.message);
+        }
+        showNotification('Erro no upload', 'error');
+    }
 }
 
 /* ── DIAGNOSTICO ─────────────────────────────────────────────── */
@@ -580,7 +631,7 @@ async function runDiagnostico() {
             document.getElementById('diag-resumo').textContent = j.resumo;
             if (j.sugestoes.length) {
                 document.getElementById('diag-sugestoes-box').style.display = 'block';
-                document.getElementById('diag-sugestoes-list').innerHTML = j.sugestoes.map((s,i) => '<div class="item"><div class="item-info"><div class="item-icon yellow">&#9888;</div><div><div style="font-weight:500;font-size:0.88rem">'+(s.descricao||s.operacao)+'</div><div style="font-size:0.78rem;color:var(--text-muted)">'+s.operacao+'</div></div></div><span class="badge badge-warning">sugestao</span></div>').join('');
+                document.getElementById('diag-sugestoes-list').innerHTML = j.sugestoes.map((s,i) => '<div class="item"><div class="item-info"><div class="item-icon yellow">'+icon('alert')+'</div><div><div style="font-weight:500;font-size:0.88rem">'+(s.descricao||s.operacao)+'</div><div style="font-size:0.78rem;color:var(--text-muted)">'+s.operacao+'</div></div></div><span class="badge badge-warning">sugestao</span></div>').join('');
             } else { document.getElementById('diag-sugestoes-box').style.display = 'none'; }
         } else { showNotification(j.mensagem, 'error'); }
     } catch (e) { document.getElementById('diag-loading').style.display = 'none'; document.getElementById('btn-diag').disabled = false; showNotification('Erro: '+e.message, 'error'); }
@@ -648,11 +699,11 @@ function adicionarLimpeza() {
     }
     etapasLimpeza.push({operacao:op,params});renderFilaLimpeza();showNotification('Etapa "'+op+'" adicionada','success');
 }
-function renderFilaLimpeza(){const d=document.getElementById('limp-fila');if(!etapasLimpeza.length){d.innerHTML='<div style="text-align:center;padding:24px;color:var(--text-muted);font-size:0.85rem">Nenhuma etapa adicionada</div>';return;}d.innerHTML=etapasLimpeza.map((e,i)=>'<div class="item"><div class="item-info"><div class="item-icon blue">'+(i+1)+'</div><div><div style="font-weight:500;font-size:0.88rem">'+e.operacao+'</div><div style="font-size:0.78rem;color:var(--text-muted)">'+JSON.stringify(e.params).substring(0,80)+'</div></div></div><button class="btn btn-ghost btn-sm" onclick="etapasLimpeza.splice('+i+',1);renderFilaLimpeza()">&#10005;</button></div>').join('');}
+function renderFilaLimpeza(){const d=document.getElementById('limp-fila');if(!etapasLimpeza.length){d.innerHTML='<div style="text-align:center;padding:24px;color:var(--text-muted);font-size:0.85rem">Nenhuma etapa adicionada</div>';return;}d.innerHTML=etapasLimpeza.map((e,i)=>'<div class="item"><div class="item-info"><div class="item-icon blue">'+(i+1)+'</div><div><div style="font-weight:500;font-size:0.88rem">'+e.operacao+'</div><div style="font-size:0.78rem;color:var(--text-muted)">'+JSON.stringify(e.params).substring(0,80)+'</div></div></div><button class="btn btn-ghost btn-sm" onclick="etapasLimpeza.splice('+i+',1);renderFilaLimpeza()">'+icon('x')+'</button></div>').join('');}
 async function executarLimpeza(){
     if(!etapasLimpeza.length){showNotification('Nenhuma etapa pendente','error');return;}
     for(const e of etapasLimpeza)await fetch('/limpeza/'+SID,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(e)});
-    try{const r=await fetch('/executar_limpeza/'+SID,{method:'POST'});const j=await r.json();if(j.ok){etapasLimpeza=[];renderFilaLimpeza();document.getElementById('limp-result').style.display='block';document.getElementById('limp-result-list').innerHTML=j.resultados.map(r=>'<div class="item"><div class="item-info"><div class="item-icon green">&#10003;</div><div style="font-size:0.88rem">'+r+'</div></div></div>').join('');updateEstado();showNotification('Limpeza executada!','success');}else{showNotification(j.mensagem,'error');}}catch(e){showNotification('Erro: '+e.message,'error');}
+    try{const r=await fetch('/executar_limpeza/'+SID,{method:'POST'});const j=await r.json();if(j.ok){etapasLimpeza=[];renderFilaLimpeza();document.getElementById('limp-result').style.display='block';document.getElementById('limp-result-list').innerHTML=j.resultados.map(r=>'<div class="item"><div class="item-info"><div class="item-icon green">'+icon('check')+'</div><div style="font-size:0.88rem">'+r+'</div></div></div>').join('');updateEstado();showNotification('Limpeza executada!','success');}else{showNotification(j.mensagem,'error');}}catch(e){showNotification('Erro: '+e.message,'error');}
 }
 
 /* ── MANIPULACAO ─────────────────────────────────────────────── */
@@ -688,23 +739,33 @@ function adicionarManipulacao() {
     }
     etapasManip.push({operacao:op,params});renderFilaManip();showNotification('Etapa "'+op+'" adicionada','success');
 }
-function renderFilaManip(){const d=document.getElementById('manip-fila');if(!etapasManip.length){d.innerHTML='<div style="text-align:center;padding:24px;color:var(--text-muted);font-size:0.85rem">Nenhuma etapa adicionada</div>';return;}d.innerHTML=etapasManip.map((e,i)=>'<div class="item"><div class="item-info"><div class="item-icon blue">'+(i+1)+'</div><div><div style="font-weight:500;font-size:0.88rem">'+e.operacao+'</div><div style="font-size:0.78rem;color:var(--text-muted)">'+JSON.stringify(e.params).substring(0,80)+'</div></div></div><button class="btn btn-ghost btn-sm" onclick="etapasManip.splice('+i+',1);renderFilaManip()">&#10005;</button></div>').join('');}
+function renderFilaManip(){const d=document.getElementById('manip-fila');if(!etapasManip.length){d.innerHTML='<div style="text-align:center;padding:24px;color:var(--text-muted);font-size:0.85rem">Nenhuma etapa adicionada</div>';return;}d.innerHTML=etapasManip.map((e,i)=>'<div class="item"><div class="item-info"><div class="item-icon blue">'+(i+1)+'</div><div><div style="font-weight:500;font-size:0.88rem">'+e.operacao+'</div><div style="font-size:0.78rem;color:var(--text-muted)">'+JSON.stringify(e.params).substring(0,80)+'</div></div></div><button class="btn btn-ghost btn-sm" onclick="etapasManip.splice('+i+',1);renderFilaManip()">'+icon('x')+'</button></div>').join('');}
 async function executarManipulacao(){
     if(!etapasManip.length){showNotification('Nenhuma etapa pendente','error');return;}
     for(const e of etapasManip)await fetch('/manipulacao/'+SID,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(e)});
-    try{const r=await fetch('/executar_manipulacao/'+SID,{method:'POST'});const j=await r.json();if(j.ok){etapasManip=[];renderFilaManip();document.getElementById('manip-result').style.display='block';document.getElementById('manip-result-list').innerHTML=j.resultados.map(r=>'<div class="item"><div class="item-info"><div class="item-icon green">&#10003;</div><div style="font-size:0.88rem">'+r+'</div></div></div>').join('');updateEstado();showNotification('Manipulacao executada!','success');}else{showNotification(j.mensagem,'error');}}catch(e){showNotification('Erro: '+e.message,'error');}
+    try{const r=await fetch('/executar_manipulacao/'+SID,{method:'POST'});const j=await r.json();if(j.ok){etapasManip=[];renderFilaManip();document.getElementById('manip-result').style.display='block';document.getElementById('manip-result-list').innerHTML=j.resultados.map(r=>'<div class="item"><div class="item-info"><div class="item-icon green">'+icon('check')+'</div><div style="font-size:0.88rem">'+r+'</div></div></div>').join('');updateEstado();showNotification('Manipulacao executada!','success');}else{showNotification(j.mensagem,'error');}}catch(e){showNotification('Erro: '+e.message,'error');}
 }
 
 /* ── PREVIEW / EXPORTAR / ESTADO ─────────────────────────────── */
 async function carregarPreview(){try{const r=await fetch('/preview/'+SID);const j=await r.json();if(!j.ok){showNotification(j.mensagem,'error');return;}document.getElementById('preview-box').style.display='block';document.getElementById('preview-thead').innerHTML='<tr>'+j.colunas.map(c=>'<th>'+c+'</th>').join('')+'</tr>';document.getElementById('preview-tbody').innerHTML=j.linhas.map(l=>'<tr>'+l.map(v=>'<td>'+(v!=null?v:'')+'</td>').join('')+'</tr>').join('');document.getElementById('preview-count').textContent=j.linhas.length;document.getElementById('preview-total').textContent=j.total_linhas;}catch(e){showNotification('Erro: '+e.message,'error');}}
 async function exportarDados(){
+    document.getElementById('export-result').style.display='none';
+    document.getElementById('export-error').style.display='none';
     const pasta=document.getElementById('pasta-destino').value.trim();
     const url=pasta?'/exportar/'+SID+'?pasta='+encodeURIComponent(pasta):'/exportar/'+SID;
     try{const r=await fetch(url);const j=await r.json();if(j.ok){
         document.getElementById('export-result').style.display='block';
         document.getElementById('export-file').textContent=j.arquivo+(j.pasta_destino?' em '+j.pasta_destino:'');
         showNotification('Exportado com sucesso!','success');
-    }else{showNotification(j.mensagem,'error');}}catch(e){showNotification('Erro: '+e.message,'error');}
+    }else{
+        document.getElementById('export-error').style.display='block';
+        document.getElementById('export-error-msg').textContent=j.mensagem||'Erro desconhecido.';
+        showNotification('Falha ao exportar','error');
+    }}catch(e){
+        document.getElementById('export-error').style.display='block';
+        document.getElementById('export-error-msg').textContent='Falha de conexao: '+e.message;
+        showNotification('Erro de conexao','error');
+    }
 }
 async function updateEstado(){try{const r=await fetch('/estado/'+SID);const j=await r.json();if(j.ok&&j.tem_dados){document.getElementById('estado-badge').style.display='';document.getElementById('estado-linhas').textContent=fmtNum(j.linhas);document.getElementById('estado-colunas').textContent=j.colunas;window.COLUNAS=j.nomes_colunas;}}catch(e){}}
 
@@ -732,7 +793,7 @@ async function navegarBrowser(caminho){
         document.getElementById('btn-pai').disabled=!j.pai;
         if(!j.pastas.length){lista.innerHTML='<div style="text-align:center;padding:24px;color:var(--text-muted);font-size:0.85rem">Nenhuma subpasta</div>';return;}
         lista.innerHTML=j.pastas.map(p=>
-            '<div class="folder-item" ondblclick="navegarBrowser(\''+p.caminho.replace(/\\/g,'\\\\').replace(/'/g,"\\'")+'\')">'+p.nome+'</div>'
+            '<div class="folder-item" ondblclick="navegarBrowser(\''+p.caminho.replace(/\\/g,'\\\\').replace(/'/g,"\\'")+'\')">'+ICONS['folder-item']+' '+p.nome+'</div>'
         ).join('');
     }catch(e){lista.innerHTML='<div style="text-align:center;padding:24px;color:#E74C3C">Erro: '+e.message+'</div>';}
 }
@@ -796,10 +857,10 @@ function atualizarFormManip() {
         procv: '<div class="form-group"><label>Tabela referencia</label><input class="form-control" id="mp-tabela"></div><div class="form-group"><label>Coluna chave (atual)</label><select class="form-control" id="mp-col">'+c+'</select></div><div class="form-group"><label>Coluna chave ref</label><input class="form-control" id="mp-chaveref"></div><div class="form-group"><label>Coluna valor ref</label><input class="form-control" id="mp-valorref"></div>',
         indice_corresp: '<div class="form-group"><label>Coluna retorno</label><select class="form-control" id="mp-colret">'+c+'</select></div><div class="form-group"><label>Valor procurado (fixo ou coluna)</label><input class="form-control" id="mp-valorproc" placeholder="ex: SIM ou nome_coluna"></div><div class="form-group"><label>Coluna busca</label><select class="form-control" id="mp-colbusca">'+c+'</select></div><div style="font-size:0.78rem;color:var(--text-muted);margin-top:4px">=INDICE(col_ret; CORRESP(valor; col_busca; 0))</div>',
         corresp: '<div class="form-group"><label>Coluna busca</label><select class="form-control" id="mp-col">'+c+'</select></div><div class="form-group"><label>Valor</label><input class="form-control" id="mp-valor"></div>',
-        harmonica: '<div class="form-group"><label>Coluna</label><select class="form-control" id="mp-col">'+c+'</select></div><div style="font-size:0.78rem;color:var(--text-muted);margin-top:4px">N / soma(1/x) — media harmonica</div>',
+        harmonica: '<div class="form-group"><label>Coluna</label><select class="form-control" id="mp-col">'+c+'</select></div><div style="font-size:0.78rem;color:var(--text-muted);margin-top:4px">N / soma(1/x) - media harmonica</div>',
         correl: '<div class="form-group"><label>Coluna A</label><select class="form-control" id="mp-cola">'+c+'</select></div><div class="form-group"><label>Coluna B</label><select class="form-control" id="mp-colb">'+c+'</select></div><div class="form-group"><label>Metodo</label><select class="form-control" id="mp-metodo"><option value="pearson">Pearson</option><option value="spearman">Spearman</option><option value="kendall">Kendall</option></select></div>',
         pearson: '<div class="form-group"><label>Coluna A</label><select class="form-control" id="mp-cola">'+c+'</select></div><div class="form-group"><label>Coluna B</label><select class="form-control" id="mp-colb">'+c+'</select></div><div style="font-size:0.78rem;color:var(--text-muted);margin-top:4px">Coeficiente de Pearson (r): -1 a +1</div>',
-        spearman: '<div class="form-group"><label>Coluna A</label><select class="form-control" id="mp-cola">'+c+'</select></div><div class="form-group"><label>Coluna B</label><select class="form-control" id="mp-colb">'+c+'</select></div><div style="font-size:0.78rem;color:var(--text-muted);margin-top:4px">Correlacao de Spearman (rho) — postos</div>',
+        spearman: '<div class="form-group"><label>Coluna A</label><select class="form-control" id="mp-cola">'+c+'</select></div><div class="form-group"><label>Coluna B</label><select class="form-control" id="mp-colb">'+c+'</select></div><div style="font-size:0.78rem;color:var(--text-muted);margin-top:4px">Correlacao de Spearman (rho) - postos</div>',
     };
     div.innerHTML = forms[op] || '';
 }

@@ -14,6 +14,7 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from fastapi.responses import HTMLResponse, RedirectResponse, JSONResponse
 from starlette.middleware.base import BaseHTTPMiddleware
+from starlette.requests import Request as StarletteRequest
 import starlette.requests
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -29,14 +30,21 @@ from src.utils import configurar_logger
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 PASTA_RAW = os.path.join(BASE_DIR, "..", "data", "raw")
 PASTA_PROCESSED = os.path.join(BASE_DIR, "..", "data", "processed")
+PASTA_UPLOADS = os.path.join(BASE_DIR, "..", "data", "uploads")
 
 os.makedirs(PASTA_RAW, exist_ok=True)
 os.makedirs(PASTA_PROCESSED, exist_ok=True)
+os.makedirs(PASTA_UPLOADS, exist_ok=True)
 
 app = FastAPI(title="ETL NGR-SEE", docs_url=None, redoc_url=None)
 
-# Sem limite de upload — bases massivas
-app.state.max_upload_size = None
+
+class LargeUploadMiddleware(BaseHTTPMiddleware):
+    async def dispatch(self, request, call_next):
+        return await call_next(request)
+
+
+app.add_middleware(LargeUploadMiddleware)
 
 app.mount("/static", StaticFiles(directory=os.path.join(BASE_DIR, "static")), name="static")
 
@@ -98,8 +106,13 @@ async def upload_file(request: Request, session_id: str, arquivo: UploadFile = F
     nome_seguro = f"{session_id}_{arquivo.filename}"
     caminho = os.path.join(PASTA_RAW, nome_seguro)
 
+    CHUNK_SIZE = 1024 * 1024  # 1MB chunks
     with open(caminho, "wb") as f:
-        shutil.copyfileobj(arquivo.file, f)
+        while True:
+            chunk = await arquivo.read(CHUNK_SIZE)
+            if not chunk:
+                break
+            f.write(chunk)
 
     sessao["arquivo"] = arquivo.filename
 
