@@ -1,5 +1,0 @@
-INFO:     Started server process [11104]
-INFO:     Waiting for application startup.
-INFO:     Application startup complete.
-INFO:     Uvicorn running on http://127.0.0.1:8007 (Press CTRL+C to quit)
-2026-08-07 12:01:32 | INFO | Log desta execução salvo em: D:\ETL_Python_NGR-SEE\data\logs\execucao_20260807_120132.log

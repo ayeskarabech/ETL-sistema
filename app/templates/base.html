@@ -577,21 +577,32 @@ async function uploadFile(file) {
     const fd = new FormData(); fd.append('arquivo', file);
     const sizeMB = (file.size / 1024 / 1024).toFixed(1);
     uploadArea.querySelector('.upload-icon').innerHTML = ICONS['upload-lg'];
-    uploadArea.querySelector('.upload-text').innerHTML = 'Carregando<span class="loading-dots"></span>';
-    uploadArea.querySelector('.upload-hint').textContent = sizeMB + ' MB';
+    uploadArea.querySelector('.upload-text').innerHTML = 'Enviando arquivo<span class="loading-dots"></span>';
+    uploadArea.querySelector('.upload-hint').textContent = sizeMB + ' MB para o servidor...';
     uploadArea.style.pointerEvents = 'none';
     document.getElementById('upload-error').style.display = 'none';
-    const ctrl = new AbortController();
-    const tid = setTimeout(() => ctrl.abort(), 600000);
+
     try {
-        const r = await fetch('/upload/' + SID, { method: 'POST', body: fd, signal: ctrl.signal });
-        clearTimeout(tid);
-        const j = await r.json();
-        if (j.ok) {
+        const r1 = await fetch('/upload/' + SID, { method: 'POST', body: fd });
+        if (!r1.ok) { throw new Error('Erro HTTP ' + r1.status + ' no upload'); }
+        const j1 = await r1.json().catch(() => ({ ok: false, mensagem: 'Resposta invalida do servidor' }));
+        if (!j1.ok) {
+            showUploadError(j1.mensagem || 'Erro ao enviar arquivo.');
+            showNotification('Falha no envio', 'error');
+            return;
+        }
+
+        uploadArea.querySelector('.upload-text').innerHTML = 'Processando dados<span class="loading-dots"></span>';
+        uploadArea.querySelector('.upload-hint').textContent = 'Lendo ' + sizeMB + ' MB com pandas...';
+
+        const r2 = await fetch('/load/' + SID, { method: 'POST' });
+        if (!r2.ok) { throw new Error('Erro HTTP ' + r2.status + ' no processamento'); }
+        const j2 = await r2.json().catch(() => ({ ok: false, mensagem: 'Resposta invalida do servidor' }));
+        if (j2.ok) {
             document.getElementById('upload-status').style.display = 'block';
             document.getElementById('upload-nome').textContent = file.name;
-            document.getElementById('upload-linhas').textContent = fmtNum(j.linhas);
-            document.getElementById('upload-colunas').innerHTML = j.colunas.map(c => '<span class="badge badge-info">'+c+'</span>').join('');
+            document.getElementById('upload-linhas').textContent = fmtNum(j2.linhas);
+            document.getElementById('upload-colunas').innerHTML = j2.colunas.map(c => '<span class="badge badge-info">'+c+'</span>').join('');
             uploadArea.querySelector('.upload-icon').innerHTML = ICONS.check;
             uploadArea.querySelector('.upload-icon').style.color = '#2ECC71';
             uploadArea.querySelector('.upload-text').textContent = 'Arquivo carregado!';
@@ -599,19 +610,21 @@ async function uploadFile(file) {
             updateEstado();
             showNotification('Arquivo carregado com sucesso!', 'success');
         } else {
-            showUploadError(j.mensagem || 'Erro desconhecido ao carregar arquivo.');
-            showNotification('Falha no upload', 'error');
+            showUploadError(j2.mensagem || 'Erro ao processar arquivo.');
+            showNotification('Falha no processamento', 'error');
         }
     } catch (e) {
-        clearTimeout(tid);
-        if (e.name === 'AbortError') {
-            showUploadError('Tempo limite excedido (10 minutos). Arquivo pode ser grande demais.');
-        } else if (e.message.includes('Failed to fetch') || e.message.includes('NetworkError')) {
+        const msg = (e && e.message) ? e.message : String(e);
+        if (msg.includes('AbortError') || msg.includes('aborted')) {
+            showUploadError('Tempo limite excedido. Arquivo pode ser grande demais.');
+        } else if (msg.includes('Failed to fetch') || msg.includes('NetworkError')) {
             showUploadError('Falha de conexao. Verifique se o servidor esta rodando.');
         } else {
-            showUploadError('Erro: ' + e.message);
+            showUploadError('Erro: ' + msg);
         }
         showNotification('Erro no upload', 'error');
+    } finally {
+        uploadArea.style.pointerEvents = '';
     }
 }
 

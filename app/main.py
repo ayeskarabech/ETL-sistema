@@ -6,16 +6,13 @@ FastAPI + Jinja2 + Glassmorphism
 import os
 import sys
 import uuid
-import shutil
+import asyncio
 from datetime import datetime
 
 from fastapi import FastAPI, UploadFile, File, Form, Request
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from fastapi.responses import HTMLResponse, RedirectResponse, JSONResponse
-from starlette.middleware.base import BaseHTTPMiddleware
-from starlette.requests import Request as StarletteRequest
-import starlette.requests
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
@@ -37,14 +34,6 @@ os.makedirs(PASTA_PROCESSED, exist_ok=True)
 os.makedirs(PASTA_UPLOADS, exist_ok=True)
 
 app = FastAPI(title="ETL NGR-SEE", docs_url=None, redoc_url=None)
-
-
-class LargeUploadMiddleware(BaseHTTPMiddleware):
-    async def dispatch(self, request, call_next):
-        return await call_next(request)
-
-
-app.add_middleware(LargeUploadMiddleware)
 
 app.mount("/static", StaticFiles(directory=os.path.join(BASE_DIR, "static")), name="static")
 
@@ -100,43 +89,82 @@ async def app_page(request: Request, session_id: str):
 @app.post("/upload/{session_id}")
 async def upload_file(request: Request, session_id: str, arquivo: UploadFile = File(...)):
     sessao = get_session(session_id)
-    ctx = sessao["ctx"]
 
     ext = os.path.splitext(arquivo.filename)[1].lower()
     nome_seguro = f"{session_id}_{arquivo.filename}"
-    caminho = os.path.join(PASTA_RAW, nome_seguro)
+    caminho = os.path.join(PASTA_UPLOADS, nome_seguro)
 
-    CHUNK_SIZE = 1024 * 1024  # 1MB chunks
+    CHUNK_SIZE = 1024 * 1024
+    total_bytes = 0
     with open(caminho, "wb") as f:
         while True:
             chunk = await arquivo.read(CHUNK_SIZE)
             if not chunk:
                 break
             f.write(chunk)
+            total_bytes += len(chunk)
 
     sessao["arquivo"] = arquivo.filename
+    sessao["caminho_upload"] = caminho
+    sessao["extensao"] = ext
+    sessao["upload_status"] = "salvo"
 
-    try:
+    return JSONResponse({
+        "ok": True,
+        "mensagem": f"Arquivo '{arquivo.filename}' salvo ({total_bytes / 1024 / 1024:.1f} MB). Clique em 'Carregar' para processar.",
+        "caminho": caminho,
+    })
+
+
+@app.post("/load/{session_id}")
+async def load_file(request: Request, session_id: str):
+    sessao = get_session(session_id)
+    ctx = sessao["ctx"]
+
+    caminho = sessao.get("caminho_upload")
+    ext = sessao.get("extensao", "")
+    arquivo = sessao.get("arquivo", "")
+
+    if not caminho or not os.path.exists(caminho):
+        return JSONResponse({"ok": False, "mensagem": "Nenhum arquivo salvo. Faca upload primeiro."}, status_code=400)
+
+    sessao["upload_status"] = "carregando"
+
+    def _carregar():
         if ext in (".xlsx", ".xls"):
             converter = ExcelConverter(logger=sessao["logger"])
             sheets = converter.listar_sheets(caminho)
-            caminho_csv = converter.converter(caminho, PASTA_RAW, sheet=sheets[0], nome_saida=nome_seguro.replace(ext, ""))
+            caminho_csv = converter.converter(caminho, PASTA_UPLOADS, sheet=sheets[0], nome_saida=os.path.splitext(os.path.basename(caminho))[0])
             loader = CSVLoader(caminho_csv, logger=sessao["logger"])
         else:
             loader = CSVLoader(caminho, logger=sessao["logger"])
+        return loader.carregar()
 
-        df = loader.carregar()
-        ctx.set_data(df, f"Arquivo carregado: {arquivo.filename}")
+    try:
+        df = await asyncio.to_thread(_carregar)
+        ctx.set_data(df, f"Arquivo carregado: {arquivo}")
         ctx.registrar_snapshot_inicial()
+        sessao["upload_status"] = "ok"
 
         return JSONResponse({
             "ok": True,
             "linhas": len(df),
             "colunas": list(df.columns),
-            "mensagem": f"Arquivo '{arquivo.filename}' carregado com sucesso.",
+            "mensagem": f"Arquivo '{arquivo}' carregado com sucesso.",
         })
     except Exception as e:
+        sessao["upload_status"] = "erro"
         return JSONResponse({"ok": False, "mensagem": str(e)}, status_code=400)
+
+
+@app.get("/upload_status/{session_id}")
+async def upload_status(request: Request, session_id: str):
+    sessao = get_session(session_id)
+    return JSONResponse({
+        "ok": True,
+        "status": sessao.get("upload_status", "nenhum"),
+        "arquivo": sessao.get("arquivo"),
+    })
 
 
 @app.get("/diagnostico/{session_id}")

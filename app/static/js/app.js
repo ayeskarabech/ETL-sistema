@@ -268,53 +268,53 @@ async function uploadFile(file) {
     const fd = new FormData();
     fd.append('arquivo', file);
     const sizeMB = (file.size / 1024 / 1024).toFixed(1);
-    uploadArea.querySelector('.upload-text').innerHTML = 'Carregando<span class="loading-dots"></span>';
-    uploadArea.querySelector('.upload-hint').textContent = `${sizeMB} MB — arquivos grandes podem levar alguns minutos`;
+    uploadArea.querySelector('.upload-text').innerHTML = 'Enviando arquivo<span class="loading-dots"></span>';
+    uploadArea.querySelector('.upload-hint').textContent = `${sizeMB} MB para o servidor...`;
     uploadArea.style.pointerEvents = 'none';
 
-    // Timeout maior para arquivos massivos (10 min)
-    const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 600000);
-
     try {
-        const r = await fetch(`/upload/${SID}`, {
-            method: 'POST',
-            body: fd,
-            signal: controller.signal,
-        });
-        clearTimeout(timeoutId);
-        const j = await r.json();
-        if (j.ok) {
+        const r1 = await fetch(`/upload/${SID}`, { method: 'POST', body: fd });
+        if (!r1.ok) throw new Error('Erro HTTP ' + r1.status + ' no upload');
+        const j1 = await r1.json().catch(() => ({ ok: false, mensagem: 'Resposta invalida do servidor' }));
+        if (!j1.ok) {
+            showNotification('Falha no envio: ' + (j1.mensagem || 'Erro desconhecido'), 'error');
+            uploadArea.querySelector('.upload-text').textContent = 'Arraste ou clique para selecionar';
+            uploadArea.querySelector('.upload-hint').textContent = 'Formatos aceitos: .csv, .xlsx, .xls';
+            uploadArea.style.pointerEvents = '';
+            return;
+        }
+
+        uploadArea.querySelector('.upload-text').innerHTML = 'Processando dados<span class="loading-dots"></span>';
+        uploadArea.querySelector('.upload-hint').textContent = `Lendo ${sizeMB} MB com pandas...`;
+
+        const r2 = await fetch(`/load/${SID}`, { method: 'POST' });
+        if (!r2.ok) throw new Error('Erro HTTP ' + r2.status + ' no processamento');
+        const j2 = await r2.json().catch(() => ({ ok: false, mensagem: 'Resposta invalida do servidor' }));
+        if (j2.ok) {
             document.getElementById('upload-status').style.display = 'block';
             document.getElementById('upload-nome').textContent = file.name;
-            document.getElementById('upload-linhas').textContent = fmtNum(j.linhas);
+            document.getElementById('upload-linhas').textContent = fmtNum(j2.linhas);
             const colDiv = document.getElementById('upload-colunas');
-            colDiv.innerHTML = j.colunas.map(c => `<span class="badge badge-info">${c}</span>`).join('');
-            uploadArea.querySelector('.upload-icon').innerHTML = '&#10003;';
+            colDiv.innerHTML = j2.colunas.map(c => `<span class="badge badge-info">${c}</span>`).join('');
+            uploadArea.querySelector('.upload-icon').innerHTML = ICONS.check;
             uploadArea.querySelector('.upload-text').textContent = 'Arquivo carregado!';
             uploadArea.querySelector('.upload-hint').textContent = '';
+            uploadArea.style.pointerEvents = '';
             updateEstado();
             showNotification('Arquivo carregado com sucesso!', 'success');
         } else {
-            showNotification('Erro: ' + j.mensagem, 'error');
+            showNotification('Erro: ' + (j2.mensagem || 'Falha ao processar'), 'error');
             uploadArea.querySelector('.upload-text').textContent = 'Arraste ou clique para selecionar';
             uploadArea.querySelector('.upload-hint').textContent = 'Formatos aceitos: .csv, .xlsx, .xls';
             uploadArea.style.pointerEvents = '';
         }
     } catch (e) {
-        clearTimeout(timeoutId);
-        if (e.name === 'AbortError') {
-            showNotification('Tempo esgotado. Arquivo muito grande ou conexao lenta.', 'error');
+        const msg = (e && e.message) ? e.message : String(e);
+        if (msg.includes('Failed to fetch') || msg.includes('NetworkError')) {
+            showNotification('Falha de conexao. Verifique se o servidor esta rodando.', 'error');
         } else {
-            showNotification('Erro de conexao: ' + e.message, 'error');
+            showNotification('Erro: ' + msg, 'error');
         }
-        uploadArea.querySelector('.upload-text').textContent = 'Arraste ou clique para selecionar';
-        uploadArea.querySelector('.upload-hint').textContent = 'Formatos aceitos: .csv, .xlsx, .xls';
-        uploadArea.style.pointerEvents = '';
-    }
-}
-    } catch (e) {
-        showNotification('Erro de conexao: ' + e.message, 'error');
         uploadArea.querySelector('.upload-text').textContent = 'Arraste ou clique para selecionar';
         uploadArea.querySelector('.upload-hint').textContent = 'Formatos aceitos: .csv, .xlsx, .xls';
         uploadArea.style.pointerEvents = '';
