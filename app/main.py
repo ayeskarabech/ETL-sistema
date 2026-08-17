@@ -291,22 +291,9 @@ async def preview(request: Request, session_id: str):
     if ctx.data.empty:
         return JSONResponse({"ok": False, "mensagem": "Nenhum dado."}, status_code=400)
 
-    import math
-
     df = ctx.data.head(50)
-    colunas = [str(c) for c in df.columns]
-
-    linhas = []
-    for _, row in df.iterrows():
-        linha = []
-        for v in row:
-            if v is None or (isinstance(v, float) and math.isnan(v)):
-                linha.append("")
-            elif isinstance(v, float):
-                linha.append(round(v, 6))
-            else:
-                linha.append(str(v)[:200])
-        linhas.append(linha)
+    colunas = list(df.columns)
+    linhas = df.fillna("").values.tolist()
 
     return JSONResponse({
         "ok": True,
@@ -343,7 +330,7 @@ async def listar_pastas(caminho: str = ""):
 
 
 @app.get("/exportar/{session_id}")
-async def exportar(request: Request, session_id: str, pasta: str = "", formato: str = "csv"):
+async def exportar(request: Request, session_id: str, pasta: str = ""):
     sessao = get_session(session_id)
     ctx = sessao["ctx"]
 
@@ -360,15 +347,9 @@ async def exportar(request: Request, session_id: str, pasta: str = "", formato: 
         except Exception as e:
             return JSONResponse({"ok": False, "mensagem": f"Erro ao criar pasta: {e}"}, status_code=400)
 
+    exporter = PowerBIExporter(pasta_destino, logger=sessao["logger"])
     nome_base = f"etl_{session_id}_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
-
-    if formato == "xlsx":
-        import pandas as pd
-        caminho = os.path.join(pasta_destino, f"{nome_base}.xlsx")
-        ctx.data.to_excel(caminho, index=False, engine="openpyxl")
-    else:
-        exporter = PowerBIExporter(pasta_destino, logger=sessao["logger"])
-        caminho = exporter.exportar(ctx.data, nome_base)
+    caminho = exporter.exportar(ctx.data, nome_base)
 
     return JSONResponse({
         "ok": True,
