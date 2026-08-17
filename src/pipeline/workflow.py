@@ -462,12 +462,26 @@ class Pipeline:
         df_ref = self.context.get_tabela(p["tabela"])
         if df_ref.empty:
             return StepResult(False, f"Tabela '{p['tabela']}' nao encontrada.")
-        df = pd.merge(df, df_ref, on=p["coluna_chave"], how=p.get("tipo", "left"))
+
+        # Usa DuckDB para bases grandes se disponivel
+        duckdb = self.context.duckdb_engine
+        if duckdb and duckdb.disponivel and len(df) >= 50_000:
+            df = duckdb.juntar(df, df_ref, on=p["coluna_chave"], tipo=p.get("tipo", "left"))
+        else:
+            df = pd.merge(df, df_ref, on=p["coluna_chave"], how=p.get("tipo", "left"))
+
         self.context.set_data(df, f"JOIN: {p['tabela']}")
         return StepResult(True, f"JOIN com '{p['tabela']}'.")
 
     def _op_agregar(self, p: dict) -> StepResult:
         df = self.context.get_data()
-        df = df.groupby(p["colunas_grupo"], as_index=False).agg({p["coluna_alvo"]: p.get("funcao", "sum")})
+
+        # Usa DuckDB para bases grandes se disponivel
+        duckdb = self.context.duckdb_engine
+        if duckdb and duckdb.disponivel and len(df) >= 100_000:
+            df = duckdb.agregar(df, p["colunas_grupo"], p["coluna_alvo"], p.get("funcao", "sum"))
+        else:
+            df = df.groupby(p["colunas_grupo"], as_index=False).agg({p["coluna_alvo"]: p.get("funcao", "sum")})
+
         self.context.set_data(df, f"Agregacao: {p['colunas_grupo']}")
         return StepResult(True, f"Agregacao: {len(df)} grupos.")

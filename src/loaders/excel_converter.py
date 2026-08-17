@@ -14,9 +14,9 @@ class ExcelConverter:
     def __init__(self, logger=None):
         self.logger = logger
 
-    def _log(self, msg: str):
+    def _log(self, msg: str, nivel: str = "info"):
         if self.logger:
-            self.logger.info(msg)
+            getattr(self.logger, nivel)(msg)
         else:
             print(f"[CONVERSOR] {msg}")
 
@@ -31,8 +31,11 @@ class ExcelConverter:
             self._log(f"ERRO ao ler abas com openpyxl: {e}")
             self._log("Tentando com polars...")
             try:
-                xf = pl.ExcelWorkbook(caminho_xlsx)
-                sheets = xf.sheet_names()
+                resultado = pl.read_excel(caminho_xlsx, sheet_id=0)
+                if isinstance(resultado, dict):
+                    sheets = list(resultado.keys())
+                else:
+                    sheets = ["Sheet1"]
                 self._log(f"Sheets encontradas (polars): {sheets}")
                 return sheets
             except Exception as e2:
@@ -55,7 +58,7 @@ class ExcelConverter:
         try:
             df = self._ler_polars(caminho_xlsx, sheet)
         except Exception as e:
-            self._log(f"Polars falhou ({e}), tentando pandas...", "warning" if hasattr(self.logger, 'warning') else None)
+            self._log(f"Polars falhou ({e}), tentando pandas...", "warning")
             df = pd.read_excel(caminho_xlsx, sheet_name=sheet, engine="openpyxl")
 
         if casas_decimais is not None:
@@ -74,18 +77,10 @@ class ExcelConverter:
 
     def _ler_polars(self, caminho_xlsx: str, sheet) -> pd.DataFrame:
         """Le Excel com polars (calamine engine, extremamente rapido)."""
-       xf = pl.ExcelWorkbook(caminho_xlsx)
-
         if isinstance(sheet, int):
-            sheets = xf.sheet_names()
-            if sheet < len(sheet):
-                sheet_name = sheets[sheet]
-            else:
-                sheet_name = sheets[0]
+            df_pl = pl.read_excel(caminho_xlsx, sheet_id=sheet + 1)
         else:
-            sheet_name = sheet
-
-        df_pl = xf.read_excel(sheet_name=sheet_name)
+            df_pl = pl.read_excel(caminho_xlsx, sheet_name=sheet)
         return df_pl.to_pandas()
 
     def converter_todas_sheets(self, caminho_xlsx: str, pasta_saida: str) -> list:

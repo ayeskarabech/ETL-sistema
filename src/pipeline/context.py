@@ -4,10 +4,17 @@ Contexto do pipeline: armazena o estado atual do processamento
 
 Otimizacao: get_data() retorna view quando possivel, so copia quando necessario.
 set_data() armazena direto, sem copia extra — quem chama decide se copia.
+DuckDB engine disponivel para operacoes pesadas (JOINs, agregacoes).
 """
 
 import pandas as pd
 from datetime import datetime
+
+try:
+    from src.loaders.duckdb_engine import DuckDBEngine
+    HAS_DUCKDB = True
+except ImportError:
+    HAS_DUCKDB = False
 
 
 class PipelineContext:
@@ -28,10 +35,23 @@ class PipelineContext:
         # Snapshot inicial para o relatorio final
         self._snapshot_inicial: dict = {}
 
+        # Motor DuckDB para operacoes pesadas
+        self._duckdb_engine = DuckDBEngine(logger) if HAS_DUCKDB else None
+
     def _log(self, msg: str):
         self.log_buffer.append(msg)
         if self.logger:
             self.logger.info(msg)
+
+    @property
+    def duckdb_engine(self):
+        """Motor DuckDB para operacoes pesadas (JOINs, agregacoes)."""
+        return self._duckdb_engine
+
+    def fechar(self):
+        """Libera recursos do DuckDB engine."""
+        if self._duckdb_engine:
+            self._duckdb_engine.fechar()
 
     def set_data(self, df: pd.DataFrame, descricao: str = ""):
         """Armazena o DataFrame e registra no historico."""

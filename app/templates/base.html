@@ -329,26 +329,156 @@
         <div class="tab-panel" id="tab-resultado">
 
             <div class="glass-card-header" style="margin-bottom:20px">
-                <h1 style="font-size:1.4rem">Diagnostico <span>Final</span></h1>
-                <div style="display:flex; gap:8px">
-                    <button class="btn btn-primary btn-sm" onclick="carregarDiagnosticoFinal()"><span class="icon-btn" data-icon="refresh"></span> Atualizar</button>
-                    <button class="btn btn-secondary btn-sm" onclick="carregarPreview()"><span class="icon-btn" data-icon="eye"></span> Preview</button>
-                    <button class="btn btn-accent btn-sm" onclick="abrirBrowserPastas()"><span class="icon-btn" data-icon="folder"></span> Escolher Pasta</button>
-                    <button class="btn btn-accent btn-sm" onclick="exportarDados()"><span class="icon-btn" data-icon="download"></span> Exportar CSV</button>
+                <h1 style="font-size:1.4rem">Resultado</h1>
+                <div style="display:flex; gap:6px">
+                    <button class="btn btn-primary btn-sm resultado-tab-btn" data-panel="panel-atualizar" onclick="toggleResultadoPanel(this)"><span class="icon-btn" data-icon="refresh"></span> Atualizar</button>
+                    <button class="btn btn-secondary btn-sm resultado-tab-btn" data-panel="panel-preview" onclick="toggleResultadoPanel(this)"><span class="icon-btn" data-icon="eye"></span> Preview</button>
+                    <button class="btn btn-accent btn-sm resultado-tab-btn" data-panel="panel-download" onclick="toggleResultadoPanel(this)"><span class="icon-btn" data-icon="download"></span> Download</button>
                 </div>
             </div>
 
-            <div class="glass-card" style="margin-bottom:20px">
-                <div style="font-size:0.9rem; font-weight:600; color:var(--text-primary); margin-bottom:10px">Pasta de Destino</div>
-                <div style="display:flex; gap:8px; align-items:center">
-                    <input class="form-control" id="pasta-destino" placeholder="Selecione uma pasta..." readonly style="flex:1">
-                    <button class="btn btn-secondary btn-sm" onclick="abrirBrowserPastas()"><span class="icon-btn" data-icon="folder"></span> Navegar</button>
+            <!-- PANEL: Atualizar (Diagnostico Final) -->
+            <div class="resultado-panel" id="panel-atualizar">
+                <div id="diag-final-loading" style="text-align:center; padding:30px">
+                    <div style="color:var(--text-muted); font-size:0.85rem">Clique em "Atualizar" para carregar o diagnostico.</div>
                 </div>
-                <div style="font-size:0.78rem; color:var(--text-muted); margin-top:6px">
-                    Padrao: <span id="pasta-default" style="font-family:monospace">{{ pasta_processed }}</span>
+                <div id="diag-final-conteudo" style="display:none">
+                    <div class="grid-2" style="margin-bottom:16px">
+                        <div class="glass-card" style="margin-bottom:0">
+                            <div style="font-size:0.78rem; font-weight:600; color:var(--text-muted); text-transform:uppercase; letter-spacing:0.5px; margin-bottom:12px"><span class="icon-inline" data-icon="arrow-left"></span> Estado Inicial</div>
+                            <div class="grid-2" style="gap:10px">
+                                <div><div class="stat-label">Linhas</div><div class="stat-value" id="df-linhas-antes" style="font-size:1.3rem">0</div></div>
+                                <div><div class="stat-label">Colunas</div><div class="stat-value" id="df-colunas-antes" style="font-size:1.3rem">0</div></div>
+                                <div><div class="stat-label">Nulos</div><div class="stat-value" id="df-nulos-antes" style="font-size:1.3rem">0</div></div>
+                                <div><div class="stat-label">Duplicatas</div><div class="stat-value" id="df-dups-antes" style="font-size:1.3rem">0</div></div>
+                            </div>
+                            <div style="margin-top:10px; font-size:0.75rem; color:var(--text-muted)">Memoria: <span id="df-mem-antes">0</span> MB</div>
+                        </div>
+                        <div class="glass-card" style="margin-bottom:0; border-left:4px solid var(--yellow)">
+                            <div style="font-size:0.78rem; font-weight:600; color:var(--text-muted); text-transform:uppercase; letter-spacing:0.5px; margin-bottom:12px"><span class="icon-inline" data-icon="arrow-right"></span> Estado Final</div>
+                            <div class="grid-2" style="gap:10px">
+                                <div><div class="stat-label">Linhas</div><div class="stat-value" id="df-linhas-depois" style="font-size:1.3rem">0</div></div>
+                                <div><div class="stat-label">Colunas</div><div class="stat-value" id="df-colunas-depois" style="font-size:1.3rem">0</div></div>
+                                <div><div class="stat-label">Nulos</div><div class="stat-value" id="df-nulos-depois" style="font-size:1.3rem">0</div></div>
+                                <div><div class="stat-label">Duplicatas</div><div class="stat-value" id="df-dups-depois" style="font-size:1.3rem">0</div></div>
+                            </div>
+                            <div style="margin-top:10px; font-size:0.75rem; color:var(--text-muted)">Memoria: <span id="df-mem-depois">0</span> MB</div>
+                        </div>
+                    </div>
+                    <div class="grid-4" style="margin-bottom:16px">
+                        <div class="stat-card">
+                            <div class="stat-label">Linhas</div>
+                            <div class="stat-value" id="df-var-linhas" style="font-size:1.1rem">0</div>
+                            <div class="stat-change" id="df-var-linhas-pct"></div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-label">Colunas</div>
+                            <div class="stat-value" id="df-var-colunas" style="font-size:1.1rem">0</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-label">Nulos</div>
+                            <div class="stat-value" id="df-var-nulos" style="font-size:1.1rem">0</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-label">Duplicatas</div>
+                            <div class="stat-value" id="df-var-dups" style="font-size:1.1rem">0</div>
+                        </div>
+                    </div>
+                    <div class="glass-card" style="margin-bottom:16px; display:none" id="df-colunas-box">
+                        <div style="font-size:0.88rem; font-weight:600; color:var(--text-primary); margin-bottom:10px">Mudancas na Estrutura</div>
+                        <div id="df-colunas-info" style="font-size:0.82rem; color:var(--text-secondary)"></div>
+                    </div>
+                    <div class="glass-card" style="margin-bottom:0">
+                        <div style="font-size:0.9rem; font-weight:600; color:var(--text-primary); margin-bottom:12px">Historico Detalhado</div>
+                        <div id="df-historico" class="item-list"></div>
+                    </div>
                 </div>
             </div>
 
+            <!-- PANEL: Preview -->
+            <div class="resultado-panel" id="panel-preview" style="display:none">
+                <div class="glass-card" style="margin-bottom:0">
+                    <div style="font-size:0.9rem; font-weight:600; color:var(--text-primary); margin-bottom:12px">Preview dos Dados</div>
+                    <div class="preview-scroll-container">
+                        <table class="data-table" id="preview-table">
+                            <thead id="preview-thead"></thead>
+                            <tbody id="preview-tbody"></tbody>
+                        </table>
+                    </div>
+                    <div style="margin-top:8px; text-align:center; font-size:0.78rem; color:var(--text-muted)">
+                        Mostrando <span id="preview-count">0</span> de <span id="preview-total">0</span> linhas
+                    </div>
+                </div>
+            </div>
+
+            <!-- PANEL: Download -->
+            <div class="resultado-panel" id="panel-download" style="display:none">
+                <div class="glass-card" style="margin-bottom:0">
+                    <div style="font-size:0.9rem; font-weight:600; color:var(--text-primary); margin-bottom:16px">Download dos Dados</div>
+
+                    <div class="download-options">
+                        <div>
+                            <div style="font-size:0.82rem; font-weight:600; color:var(--text-secondary); margin-bottom:6px">Pasta de Destino</div>
+                            <div class="download-folder-row">
+                                <input class="form-control" id="dl-pasta-destino" placeholder="Selecione uma pasta..." readonly>
+                                <button class="btn btn-secondary btn-sm" onclick="abrirBrowserPastas()"><span class="icon-btn" data-icon="folder"></span> Navegar</button>
+                            </div>
+                            <div style="font-size:0.75rem; color:var(--text-muted); margin-top:4px">
+                                Padrao: <span style="font-family:monospace">{{ pasta_processed }}</span>
+                            </div>
+                        </div>
+
+                        <div>
+                            <div style="font-size:0.82rem; font-weight:600; color:var(--text-secondary); margin-bottom:8px">Formato</div>
+                            <div class="format-grid">
+                                <div class="format-option selected" id="fmt-csv-opt" onclick="toggleFormat('csv')">
+                                    <input type="checkbox" id="fmt-csv" checked>
+                                    <label for="fmt-csv">
+                                        CSV
+                                        <span class="format-desc">UTF-8 BOM, pronto para Power BI</span>
+                                    </label>
+                                </div>
+                                <div class="format-option" id="fmt-xlsx-opt" onclick="toggleFormat('xlsx')">
+                                    <input type="checkbox" id="fmt-xlsx">
+                                    <label for="fmt-xlsx">
+                                        Excel (.xlsx)
+                                        <span class="format-desc">Planilha original</span>
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div style="display:flex; justify-content:flex-end; gap:8px; margin-top:16px">
+                        <button class="btn btn-accent btn-sm" onclick="executarDownload()"><span class="icon-btn" data-icon="download"></span> Exportar</button>
+                    </div>
+
+                    <div id="dl-export-result" style="display:none; margin-top:16px">
+                        <div class="glass-card" style="margin-bottom:0; border-left:4px solid #2ECC71; padding:12px 16px">
+                            <div style="display:flex; align-items:center; gap:10px">
+                                <span class="icon-success" data-icon="check-circle"></span>
+                                <div>
+                                    <div style="font-weight:600; color:var(--blue); font-size:0.88rem">Exportado com sucesso</div>
+                                    <div style="font-size:0.82rem; color:var(--text-muted); margin-top:2px" id="dl-export-file"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div id="dl-export-error" style="display:none; margin-top:16px">
+                        <div class="glass-card" style="margin-bottom:0; border-left:4px solid #E74C3C; padding:12px 16px">
+                            <div style="display:flex; align-items:center; gap:10px">
+                                <span class="icon-error" data-icon="alert"></span>
+                                <div>
+                                    <div style="font-weight:600; color:#C0392B; font-size:0.88rem">Erro ao exportar</div>
+                                    <div style="font-size:0.82rem; color:var(--text-muted); margin-top:2px" id="dl-export-error-msg"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Folder Browser Modal -->
             <div id="folder-browser-modal" class="modal-overlay">
                 <div class="glass-card modal-card">
                     <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px">
@@ -367,106 +497,6 @@
                 </div>
             </div>
 
-            <div id="diag-final-loading" style="text-align:center; padding:40px">
-                <div style="color:var(--text-muted); font-size:0.9rem">Clique em "Atualizar" ou va ate esta aba para carregar o diagnostico.</div>
-            </div>
-
-            <div id="diag-final-conteudo" style="display:none">
-
-                <div class="grid-2" style="margin-bottom:20px">
-                    <div class="glass-card" style="margin-bottom:0">
-                        <div style="font-size:0.8rem; font-weight:600; color:var(--text-muted); text-transform:uppercase; letter-spacing:0.5px; margin-bottom:14px"><span class="icon-inline" data-icon="arrow-left"></span> Estado Inicial</div>
-                        <div class="grid-2" style="gap:12px">
-                            <div><div class="stat-label">Linhas</div><div class="stat-value" id="df-linhas-antes" style="font-size:1.4rem">0</div></div>
-                            <div><div class="stat-label">Colunas</div><div class="stat-value" id="df-colunas-antes" style="font-size:1.4rem">0</div></div>
-                            <div><div class="stat-label">Nulos</div><div class="stat-value" id="df-nulos-antes" style="font-size:1.4rem">0</div></div>
-                            <div><div class="stat-label">Duplicatas</div><div class="stat-value" id="df-dups-antes" style="font-size:1.4rem">0</div></div>
-                        </div>
-                        <div style="margin-top:12px; font-size:0.78rem; color:var(--text-muted)">Memoria: <span id="df-mem-antes">0</span> MB</div>
-                    </div>
-
-                    <div class="glass-card" style="margin-bottom:0; border-left:4px solid var(--yellow)">
-                        <div style="font-size:0.8rem; font-weight:600; color:var(--text-muted); text-transform:uppercase; letter-spacing:0.5px; margin-bottom:14px"><span class="icon-inline" data-icon="arrow-right"></span> Estado Final</div>
-                        <div class="grid-2" style="gap:12px">
-                            <div><div class="stat-label">Linhas</div><div class="stat-value" id="df-linhas-depois" style="font-size:1.4rem">0</div></div>
-                            <div><div class="stat-label">Colunas</div><div class="stat-value" id="df-colunas-depois" style="font-size:1.4rem">0</div></div>
-                            <div><div class="stat-label">Nulos</div><div class="stat-value" id="df-nulos-depois" style="font-size:1.4rem">0</div></div>
-                            <div><div class="stat-label">Duplicatas</div><div class="stat-value" id="df-dups-depois" style="font-size:1.4rem">0</div></div>
-                        </div>
-                        <div style="margin-top:12px; font-size:0.78rem; color:var(--text-muted)">Memoria: <span id="df-mem-depois">0</span> MB</div>
-                    </div>
-                </div>
-
-                <div class="grid-4" style="margin-bottom:20px">
-                    <div class="stat-card">
-                        <div class="stat-label">Linhas</div>
-                        <div class="stat-value" id="df-var-linhas" style="font-size:1.1rem">0</div>
-                        <div class="stat-change" id="df-var-linhas-pct"></div>
-                    </div>
-                    <div class="stat-card">
-                        <div class="stat-label">Colunas</div>
-                        <div class="stat-value" id="df-var-colunas" style="font-size:1.1rem">0</div>
-                    </div>
-                    <div class="stat-card">
-                        <div class="stat-label">Nulos</div>
-                        <div class="stat-value" id="df-var-nulos" style="font-size:1.1rem">0</div>
-                    </div>
-                    <div class="stat-card">
-                        <div class="stat-label">Duplicatas</div>
-                        <div class="stat-value" id="df-var-dups" style="font-size:1.1rem">0</div>
-                    </div>
-                </div>
-
-                <div class="glass-card" style="margin-bottom:20px" id="df-colunas-box" style="display:none">
-                    <div style="font-size:0.9rem; font-weight:600; color:var(--text-primary); margin-bottom:12px">Mudancas na Estrutura</div>
-                    <div id="df-colunas-info" style="font-size:0.85rem; color:var(--text-secondary)"></div>
-                </div>
-
-                <div class="glass-card" style="margin-bottom:20px">
-                    <div style="font-size:0.9rem; font-weight:600; color:var(--text-primary); margin-bottom:16px">Historico Detalhado</div>
-                    <div id="df-historico" class="item-list"></div>
-                </div>
-
-                <div id="preview-box" style="display:none">
-                    <div class="glass-card" style="margin-bottom:0">
-                        <div style="font-size:0.9rem; font-weight:600; color:var(--text-primary); margin-bottom:12px">Preview dos Dados</div>
-                        <div style="overflow-x:auto; border-radius:var(--radius-sm); border:1px solid var(--border)">
-                            <table class="data-table" id="preview-table">
-                                <thead id="preview-thead"></thead>
-                                <tbody id="preview-tbody"></tbody>
-                            </table>
-                        </div>
-                        <div style="margin-top:8px; text-align:center; font-size:0.8rem; color:var(--text-muted)">
-                            Mostrando <span id="preview-count">0</span> de <span id="preview-total">0</span> linhas
-                        </div>
-                    </div>
-                </div>
-
-                <div id="export-result" style="display:none; margin-top:20px">
-                    <div class="glass-card" style="margin-bottom:0; border-left:4px solid #2ECC71">
-                        <div style="display:flex; align-items:center; gap:12px">
-                            <span class="icon-success" data-icon="check-circle"></span>
-                            <div>
-                                <div style="font-weight:600; color:var(--blue)">Exportado com sucesso</div>
-                                <div style="font-size:0.85rem; color:var(--text-muted); margin-top:4px" id="export-file"></div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <div id="export-error" style="display:none; margin-top:20px">
-                    <div class="glass-card" style="margin-bottom:0; border-left:4px solid #E74C3C">
-                        <div style="display:flex; align-items:center; gap:12px">
-                            <span class="icon-error" data-icon="alert"></span>
-                            <div>
-                                <div style="font-weight:600; color:#C0392B">Erro ao exportar</div>
-                                <div style="font-size:0.85rem; color:var(--text-muted); margin-top:4px" id="export-error-msg"></div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-            </div>
         </div>
 
     </main>
@@ -509,13 +539,51 @@ const SID = '{{ session_id }}';
 let etapasLimpeza = [];
 let etapasManip = [];
 
+/* ── HTML ESCAPE ─────────────────────────────────────────────── */
+function escHtml(v) {
+    if (v === null || v === undefined) return '';
+    const s = String(v);
+    return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/\n/g,' ').replace(/\r/g,'');
+}
+
+/* ── RESULTADO PANELS ──────────────────────────────────────── */
+function toggleResultadoPanel(btn) {
+    const panelId = btn.dataset.panel;
+    const panel = document.getElementById(panelId);
+    const allBtns = document.querySelectorAll('.resultado-tab-btn');
+    const allPanels = document.querySelectorAll('.resultado-panel');
+
+    if (panel.style.display !== 'none') {
+        panel.style.display = 'none';
+        btn.classList.remove('active');
+        btn.classList.remove('btn-primary');
+        btn.classList.add('btn-secondary');
+        return;
+    }
+
+    allPanels.forEach(p => p.style.display = 'none');
+    allBtns.forEach(b => { b.classList.remove('active'); b.classList.remove('btn-primary'); b.classList.add('btn-secondary'); });
+
+    panel.style.display = 'block';
+    btn.classList.add('active');
+    btn.classList.remove('btn-secondary');
+    btn.classList.add('btn-primary');
+
+    if (panelId === 'panel-atualizar') carregarDiagnosticoFinal();
+    if (panelId === 'panel-preview') carregarPreview();
+    initIcons();
+}
+
 /* ── INIT ICONS ─────────────────────────────────────────────── */
-document.addEventListener('DOMContentLoaded', () => {
+function initIcons() {
     document.querySelectorAll('[data-icon]').forEach(el => {
         const name = el.getAttribute('data-icon');
         if (ICONS[name]) el.innerHTML = ICONS[name];
     });
+}
 
+document.addEventListener('DOMContentLoaded', () => {
+    initIcons();
     document.querySelectorAll('.nav-item[data-tab]').forEach(item => {
         item.addEventListener('click', e => {
             e.preventDefault();
@@ -524,7 +592,12 @@ document.addEventListener('DOMContentLoaded', () => {
             item.classList.add('active');
             document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
             const panel = document.getElementById(t); if (panel) panel.classList.add('active');
-            if (t === 'tab-resultado') carregarDiagnosticoFinal();
+            if (t === 'tab-resultado') {
+                const btn = document.querySelector('.resultado-tab-btn[data-panel="panel-atualizar"]');
+                if (btn && document.getElementById('panel-atualizar').style.display === 'none') {
+                    toggleResultadoPanel(btn);
+                }
+            }
         });
     });
 });
@@ -544,7 +617,7 @@ function showPanel(id) {
     document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
     document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
     const p = document.getElementById(id); if (p) p.classList.add('active');
-    const nav = document.querySelector(`.nav-item[data-tab="${id}"]`); if (nav) nav.classList.add('active');
+    const nav = document.querySelector('.nav-item[data-tab="'+id+'"]'); if (nav) nav.classList.add('active');
 }
 
 /* ── UPLOAD ──────────────────────────────────────────────────── */
@@ -602,7 +675,7 @@ async function uploadFile(file) {
             document.getElementById('upload-status').style.display = 'block';
             document.getElementById('upload-nome').textContent = file.name;
             document.getElementById('upload-linhas').textContent = fmtNum(j2.linhas);
-            document.getElementById('upload-colunas').innerHTML = j2.colunas.map(c => '<span class="badge badge-info">'+c+'</span>').join('');
+            document.getElementById('upload-colunas').innerHTML = j2.colunas.map(c => '<span class="badge badge-info">'+escHtml(c)+'</span>').join('');
             uploadArea.querySelector('.upload-icon').innerHTML = ICONS.check;
             uploadArea.querySelector('.upload-icon').style.color = '#2ECC71';
             uploadArea.querySelector('.upload-text').textContent = 'Arquivo carregado!';
@@ -644,7 +717,7 @@ async function runDiagnostico() {
             document.getElementById('diag-resumo').textContent = j.resumo;
             if (j.sugestoes.length) {
                 document.getElementById('diag-sugestoes-box').style.display = 'block';
-                document.getElementById('diag-sugestoes-list').innerHTML = j.sugestoes.map((s,i) => '<div class="item"><div class="item-info"><div class="item-icon yellow">'+icon('alert')+'</div><div><div style="font-weight:500;font-size:0.88rem">'+(s.descricao||s.operacao)+'</div><div style="font-size:0.78rem;color:var(--text-muted)">'+s.operacao+'</div></div></div><span class="badge badge-warning">sugestao</span></div>').join('');
+                document.getElementById('diag-sugestoes-list').innerHTML = j.sugestoes.map((s,i) => '<div class="item"><div class="item-info"><div class="item-icon yellow">'+icon('alert')+'</div><div><div style="font-weight:500;font-size:0.88rem">'+escHtml(s.descricao||s.operacao)+'</div><div style="font-size:0.78rem;color:var(--text-muted)">'+escHtml(s.operacao)+'</div></div></div><span class="badge badge-warning">sugestao</span></div>').join('');
             } else { document.getElementById('diag-sugestoes-box').style.display = 'none'; }
         } else { showNotification(j.mensagem, 'error'); }
     } catch (e) { document.getElementById('diag-loading').style.display = 'none'; document.getElementById('btn-diag').disabled = false; showNotification('Erro: '+e.message, 'error'); }
@@ -660,7 +733,7 @@ async function carregarDiagnosticoFinal() {
     loading.style.display = 'block'; conteudo.style.display = 'none';
     try {
         const r = await fetch('/diagnostico_final/'+SID); const j = await r.json();
-        if (!j.ok) { loading.innerHTML = '<div style="color:var(--text-muted)">'+(j.mensagem||'Erro.')+'</div>'; return; }
+        if (!j.ok) { loading.innerHTML = '<div style="color:var(--text-muted)">'+escHtml(j.mensagem||'Erro.')+'</div>'; return; }
         loading.style.display = 'none'; conteudo.style.display = 'block';
         const ini=j.inicial||{}, fin=j.final||{};
         document.getElementById('df-linhas-antes').textContent=fmtNum(ini.linhas||0);
@@ -682,16 +755,8 @@ async function carregarDiagnosticoFinal() {
         const colIni=ini.colunas_lista||[], colFin=fin.colunas_lista||[];
         const adic=colFin.filter(c=>!colIni.includes(c)), rem=colIni.filter(c=>!colFin.includes(c));
         const cInfo=document.getElementById('df-colunas-info');
-        if(adic.length||rem.length){let h='';if(adic.length)h+='<div style="margin-bottom:8px"><span class="badge badge-success">+'+adic.length+' adicionada(s)</span> '+adic.map(c=>'<span class="badge badge-info">'+c+'</span>').join(' ')+'</div>';if(rem.length)h+='<div><span class="badge badge-danger">-'+rem.length+' removida(s)</span> '+rem.map(c=>'<span class="badge badge-warning">'+c+'</span>').join(' ')+'</div>';cInfo.innerHTML=h;document.getElementById('df-colunas-box').style.display='block';}else{document.getElementById('df-colunas-box').style.display='none';}
-        const hist=j.historico||[], hDiv=document.getElementById('df-historico');
-        if(!hist.length){hDiv.innerHTML='<div style="text-align:center;padding:24px;color:var(--text-muted);font-size:0.85rem">Nenhuma operacao executada</div>';}
-        else{hDiv.innerHTML=hist.map((h,i)=>{
-            const dL=(h.linhas_depois||0)-(h.linhas_antes||0), dC=(h.colunas_depois||0)-(h.colunas_antes||0);
-            const cls=dL<0?'red':dL>0?'green':dC!==0?'yellow':'blue';
-            let ex='';if(dL!==0||dC!==0){const p=[];if(dL!==0)p.push((dL>0?'+':'')+fmtNum(dL)+' linhas');if(dC!==0)p.push((dC>0?'+':'')+dC+' colunas');ex='<div style="margin-top:4px;font-size:0.75rem"><span class="badge '+(dL<0?'badge-danger':dL>0?'badge-success':'badge-info')+'">'+p.join(' | ')+'</span></div>';}
-            return '<div class="item" style="flex-direction:column;align-items:flex-start;padding:14px 16px"><div style="display:flex;align-items:center;gap:10px;width:100%"><div class="item-icon '+cls+'" style="flex-shrink:0">'+(i+1)+'</div><div style="flex:1"><div style="font-weight:600;font-size:0.88rem;color:var(--text-primary)">'+(h.operacao||'(sem descricao)')+'</div><div style="font-size:0.78rem;color:var(--text-muted);margin-top:2px">'+(h.linhas_antes||0)+' linhas, '+(h.colunas_antes||0)+' colunas &#8594; '+(h.linhas_depois||0)+' linhas, '+(h.colunas_depois||0)+' colunas</div>'+ex+'</div></div></div>';
-        }).join('');}
-    } catch(e){loading.innerHTML='<div style="color:var(--text-muted)">Erro: '+e.message+'</div>';}
+        if(adic.length||rem.length){let h='';if(adic.length)h+='<div style="margin-bottom:8px"><span class="badge badge-success">+'+adic.length+' adicionada(s)</span> '+adic.map(c=>'<span class="badge badge-info">'+escHtml(c)+'</span>').join(' ')+'</div>';if(rem.length)h+='<div><span class="badge badge-danger">-'+rem.length+' removida(s)</span> '+rem.map(c=>'<span class="badge badge-warning">'+escHtml(c)+'</span>').join(' ')+'</div>';cInfo.innerHTML=h;document.getElementById('df-colunas-box').style.display='block';}else{document.getElementById('df-colunas-box').style.display='none';}
+    } catch(e){loading.innerHTML='<div style="color:var(--text-muted)">Erro: '+escHtml(e.message)+'</div>';}
 }
 
 /* ── LIMPEZA ─────────────────────────────────────────────────── */
@@ -712,11 +777,11 @@ function adicionarLimpeza() {
     }
     etapasLimpeza.push({operacao:op,params});renderFilaLimpeza();showNotification('Etapa "'+op+'" adicionada','success');
 }
-function renderFilaLimpeza(){const d=document.getElementById('limp-fila');if(!etapasLimpeza.length){d.innerHTML='<div style="text-align:center;padding:24px;color:var(--text-muted);font-size:0.85rem">Nenhuma etapa adicionada</div>';return;}d.innerHTML=etapasLimpeza.map((e,i)=>'<div class="item"><div class="item-info"><div class="item-icon blue">'+(i+1)+'</div><div><div style="font-weight:500;font-size:0.88rem">'+e.operacao+'</div><div style="font-size:0.78rem;color:var(--text-muted)">'+JSON.stringify(e.params).substring(0,80)+'</div></div></div><button class="btn btn-ghost btn-sm" onclick="etapasLimpeza.splice('+i+',1);renderFilaLimpeza()">'+icon('x')+'</button></div>').join('');}
+function renderFilaLimpeza(){const d=document.getElementById('limp-fila');if(!etapasLimpeza.length){d.innerHTML='<div style="text-align:center;padding:24px;color:var(--text-muted);font-size:0.85rem">Nenhuma etapa adicionada</div>';return;}d.innerHTML=etapasLimpeza.map((e,i)=>'<div class="item"><div class="item-info"><div class="item-icon blue">'+(i+1)+'</div><div><div style="font-weight:500;font-size:0.88rem">'+escHtml(e.operacao)+'</div><div style="font-size:0.78rem;color:var(--text-muted)">'+escHtml(JSON.stringify(e.params).substring(0,80))+'</div></div></div><button class="btn btn-ghost btn-sm" onclick="etapasLimpeza.splice('+i+',1);renderFilaLimpeza()">'+icon('x')+'</button></div>').join('');}
 async function executarLimpeza(){
     if(!etapasLimpeza.length){showNotification('Nenhuma etapa pendente','error');return;}
     for(const e of etapasLimpeza)await fetch('/limpeza/'+SID,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(e)});
-    try{const r=await fetch('/executar_limpeza/'+SID,{method:'POST'});const j=await r.json();if(j.ok){etapasLimpeza=[];renderFilaLimpeza();document.getElementById('limp-result').style.display='block';document.getElementById('limp-result-list').innerHTML=j.resultados.map(r=>'<div class="item"><div class="item-info"><div class="item-icon green">'+icon('check')+'</div><div style="font-size:0.88rem">'+r+'</div></div></div>').join('');updateEstado();showNotification('Limpeza executada!','success');}else{showNotification(j.mensagem,'error');}}catch(e){showNotification('Erro: '+e.message,'error');}
+    try{const r=await fetch('/executar_limpeza/'+SID,{method:'POST'});const j=await r.json();if(j.ok){etapasLimpeza=[];renderFilaLimpeza();document.getElementById('limp-result').style.display='block';document.getElementById('limp-result-list').innerHTML=j.resultados.map(r=>'<div class="item"><div class="item-info"><div class="item-icon green">'+icon('check')+'</div><div style="font-size:0.88rem">'+escHtml(r)+'</div></div></div>').join('');updateEstado();showNotification('Limpeza executada!','success');}else{showNotification(j.mensagem,'error');}}catch(e){showNotification('Erro: '+e.message,'error');}
 }
 
 /* ── MANIPULACAO ─────────────────────────────────────────────── */
@@ -752,34 +817,65 @@ function adicionarManipulacao() {
     }
     etapasManip.push({operacao:op,params});renderFilaManip();showNotification('Etapa "'+op+'" adicionada','success');
 }
-function renderFilaManip(){const d=document.getElementById('manip-fila');if(!etapasManip.length){d.innerHTML='<div style="text-align:center;padding:24px;color:var(--text-muted);font-size:0.85rem">Nenhuma etapa adicionada</div>';return;}d.innerHTML=etapasManip.map((e,i)=>'<div class="item"><div class="item-info"><div class="item-icon blue">'+(i+1)+'</div><div><div style="font-weight:500;font-size:0.88rem">'+e.operacao+'</div><div style="font-size:0.78rem;color:var(--text-muted)">'+JSON.stringify(e.params).substring(0,80)+'</div></div></div><button class="btn btn-ghost btn-sm" onclick="etapasManip.splice('+i+',1);renderFilaManip()">'+icon('x')+'</button></div>').join('');}
+function renderFilaManip(){const d=document.getElementById('manip-fila');if(!etapasManip.length){d.innerHTML='<div style="text-align:center;padding:24px;color:var(--text-muted);font-size:0.85rem">Nenhuma etapa adicionada</div>';return;}d.innerHTML=etapasManip.map((e,i)=>'<div class="item"><div class="item-info"><div class="item-icon blue">'+(i+1)+'</div><div><div style="font-weight:500;font-size:0.88rem">'+escHtml(e.operacao)+'</div><div style="font-size:0.78rem;color:var(--text-muted)">'+escHtml(JSON.stringify(e.params).substring(0,80))+'</div></div></div><button class="btn btn-ghost btn-sm" onclick="etapasManip.splice('+i+',1);renderFilaManip()">'+icon('x')+'</button></div>').join('');}
 async function executarManipulacao(){
     if(!etapasManip.length){showNotification('Nenhuma etapa pendente','error');return;}
     for(const e of etapasManip)await fetch('/manipulacao/'+SID,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(e)});
-    try{const r=await fetch('/executar_manipulacao/'+SID,{method:'POST'});const j=await r.json();if(j.ok){etapasManip=[];renderFilaManip();document.getElementById('manip-result').style.display='block';document.getElementById('manip-result-list').innerHTML=j.resultados.map(r=>'<div class="item"><div class="item-info"><div class="item-icon green">'+icon('check')+'</div><div style="font-size:0.88rem">'+r+'</div></div></div>').join('');updateEstado();showNotification('Manipulacao executada!','success');}else{showNotification(j.mensagem,'error');}}catch(e){showNotification('Erro: '+e.message,'error');}
+    try{const r=await fetch('/executar_manipulacao/'+SID,{method:'POST'});const j=await r.json();if(j.ok){etapasManip=[];renderFilaManip();document.getElementById('manip-result').style.display='block';document.getElementById('manip-result-list').innerHTML=j.resultados.map(r=>'<div class="item"><div class="item-info"><div class="item-icon green">'+icon('check')+'</div><div style="font-size:0.88rem">'+escHtml(r)+'</div></div></div>').join('');updateEstado();showNotification('Manipulacao executada!','success');}else{showNotification(j.mensagem,'error');}}catch(e){showNotification('Erro: '+e.message,'error');}
 }
 
-/* ── PREVIEW / EXPORTAR / ESTADO ─────────────────────────────── */
-async function carregarPreview(){try{const r=await fetch('/preview/'+SID);const j=await r.json();if(!j.ok){showNotification(j.mensagem,'error');return;}document.getElementById('preview-box').style.display='block';document.getElementById('preview-thead').innerHTML='<tr>'+j.colunas.map(c=>'<th>'+c+'</th>').join('')+'</tr>';document.getElementById('preview-tbody').innerHTML=j.linhas.map(l=>'<tr>'+l.map(v=>'<td>'+(v!=null?v:'')+'</td>').join('')+'</tr>').join('');document.getElementById('preview-count').textContent=j.linhas.length;document.getElementById('preview-total').textContent=j.total_linhas;}catch(e){showNotification('Erro: '+e.message,'error');}}
-async function exportarDados(){
-    document.getElementById('export-result').style.display='none';
-    document.getElementById('export-error').style.display='none';
-    const pasta=document.getElementById('pasta-destino').value.trim();
-    const url=pasta?'/exportar/'+SID+'?pasta='+encodeURIComponent(pasta):'/exportar/'+SID;
-    try{const r=await fetch(url);const j=await r.json();if(j.ok){
-        document.getElementById('export-result').style.display='block';
-        document.getElementById('export-file').textContent=j.arquivo+(j.pasta_destino?' em '+j.pasta_destino:'');
-        showNotification('Exportado com sucesso!','success');
-    }else{
-        document.getElementById('export-error').style.display='block';
-        document.getElementById('export-error-msg').textContent=j.mensagem||'Erro desconhecido.';
-        showNotification('Falha ao exportar','error');
-    }}catch(e){
-        document.getElementById('export-error').style.display='block';
-        document.getElementById('export-error-msg').textContent='Falha de conexao: '+e.message;
+/* ── PREVIEW ─────────────────────────────────────────────────── */
+async function carregarPreview(){
+    try{
+        const r=await fetch('/preview/'+SID);
+        const j=await r.json();
+        if(!j.ok){showNotification(j.mensagem,'error');return;}
+        document.getElementById('preview-thead').innerHTML='<tr>'+j.colunas.map(c=>'<th title="'+escHtml(c)+'">'+escHtml(c)+'</th>').join('')+'</tr>';
+        document.getElementById('preview-tbody').innerHTML=j.linhas.map(l=>'<tr>'+l.map(v=>'<td title="'+escHtml(v)+'">'+escHtml(v)+'</td>').join('')+'</tr>').join('');
+        document.getElementById('preview-count').textContent=j.linhas.length;
+        document.getElementById('preview-total').textContent=j.total_linhas;
+    }catch(e){showNotification('Erro: '+e.message,'error');}
+}
+
+/* ── DOWNLOAD ─────────────────────────────────────────────── */
+function toggleFormat(fmt){
+    const opt=document.getElementById('fmt-'+fmt+'-opt');
+    const cb=document.getElementById('fmt-'+fmt);
+    cb.checked=!cb.checked;
+    opt.classList.toggle('selected',cb.checked);
+}
+async function executarDownload(){
+    const pasta=document.getElementById('dl-pasta-destino').value.trim();
+    const fmtCsv=document.getElementById('fmt-csv').checked;
+    const fmtXlsx=document.getElementById('fmt-xlsx').checked;
+    if(!fmtCsv&&!fmtXlsx){showNotification('Selecione ao menos um formato','error');return;}
+    document.getElementById('dl-export-result').style.display='none';
+    document.getElementById('dl-export-error').style.display='none';
+    const formatos=[];
+    if(fmtCsv) formatos.push('csv');
+    if(fmtXlsx) formatos.push('xlsx');
+    try{
+        for(const fmt of formatos){
+            const url=pasta?'/exportar/'+SID+'?pasta='+encodeURIComponent(pasta)+'&formato='+fmt:'/exportar/'+SID+'?formato='+fmt;
+            const r=await fetch(url);const j=await r.json();
+            if(j.ok){
+                document.getElementById('dl-export-result').style.display='block';
+                document.getElementById('dl-export-file').textContent=j.arquivo+(j.pasta_destino?' em '+j.pasta_destino:'');
+                showNotification('Exportado com sucesso! ('+fmt.toUpperCase()+')','success');
+            }else{
+                document.getElementById('dl-export-error').style.display='block';
+                document.getElementById('dl-export-error-msg').textContent=j.mensagem||'Erro desconhecido.';
+                showNotification('Falha ao exportar '+fmt.toUpperCase(),'error');
+            }
+        }
+    }catch(e){
+        document.getElementById('dl-export-error').style.display='block';
+        document.getElementById('dl-export-error-msg').textContent='Falha de conexao: '+e.message;
         showNotification('Erro de conexao','error');
     }
 }
+
+/* ── ESTADO ──────────────────────────────────────────────────── */
 async function updateEstado(){try{const r=await fetch('/estado/'+SID);const j=await r.json();if(j.ok&&j.tem_dados){document.getElementById('estado-badge').style.display='';document.getElementById('estado-linhas').textContent=fmtNum(j.linhas);document.getElementById('estado-colunas').textContent=j.colunas;window.COLUNAS=j.nomes_colunas;}}catch(e){}}
 
 /* ── BROWSER DE PASTAS ──────────────────────────────────────── */
@@ -787,7 +883,7 @@ let browserCaminhoAtual = '';
 function abrirBrowserPastas(){
     const modal=document.getElementById('folder-browser-modal');
     modal.classList.add('visible');
-    const atual=document.getElementById('pasta-destino').value.trim();
+    const atual=document.getElementById('dl-pasta-destino').value.trim();
     navegarBrowser(atual||'');
 }
 function fecharBrowserPastas(){
@@ -800,15 +896,15 @@ async function navegarBrowser(caminho){
     try{
         const r=await fetch('/listar_pastas?caminho='+encodeURIComponent(caminho));
         const j=await r.json();
-        if(!j.ok){lista.innerHTML='<div style="text-align:center;padding:24px;color:#E74C3C">'+j.mensagem+'</div>';return;}
+        if(!j.ok){lista.innerHTML='<div style="text-align:center;padding:24px;color:#E74C3C">'+escHtml(j.mensagem)+'</div>';return;}
         browserCaminhoAtual=j.caminho;
         document.getElementById('browser-caminho').value=j.caminho;
         document.getElementById('btn-pai').disabled=!j.pai;
         if(!j.pastas.length){lista.innerHTML='<div style="text-align:center;padding:24px;color:var(--text-muted);font-size:0.85rem">Nenhuma subpasta</div>';return;}
         lista.innerHTML=j.pastas.map(p=>
-            '<div class="folder-item" ondblclick="navegarBrowser(\''+p.caminho.replace(/\\/g,'\\\\').replace(/'/g,"\\'")+'\')">'+ICONS['folder-item']+' '+p.nome+'</div>'
+            '<div class="folder-item" ondblclick="navegarBrowser(\''+p.caminho.replace(/\\/g,'\\\\').replace(/'/g,"\\'")+'\')">'+ICONS['folder-item']+' '+escHtml(p.nome)+'</div>'
         ).join('');
-    }catch(e){lista.innerHTML='<div style="text-align:center;padding:24px;color:#E74C3C">Erro: '+e.message+'</div>';}
+    }catch(e){lista.innerHTML='<div style="text-align:center;padding:24px;color:#E74C3C">Erro: '+escHtml(e.message)+'</div>';}
 }
 function navegarPai(){
     const caminho=document.getElementById('browser-caminho').value;
@@ -816,7 +912,7 @@ function navegarPai(){
     if(partes.length>1){partes.pop();navegarBrowser(partes[0]+'\\'+partes.slice(1).join('\\'));}else{navegarBrowser('');}
 }
 function confirmarPasta(){
-    document.getElementById('pasta-destino').value=browserCaminhoAtual;
+    document.getElementById('dl-pasta-destino').value=browserCaminhoAtual;
     fecharBrowserPastas();
     showNotification('Pasta selecionada: '+browserCaminhoAtual,'success');
 }
@@ -826,7 +922,7 @@ function atualizarFormLimpeza() {
     const op = document.getElementById('limp-operacao').value;
     const col = typeof COLUNAS !== 'undefined' ? COLUNAS : [];
     const div = document.getElementById('limp-params');
-    const colsOpts = col.map(c => '<option value="'+c+'">'+c+'</option>').join('');
+    const colsOpts = col.map(c => '<option value="'+escHtml(c)+'">'+escHtml(c)+'</option>').join('');
     const forms = {
         remover_duplicatas: '<div class="form-group"><label>Colunas (vazio = todas)</label><select class="form-control" id="lp-col"><option value="">Todas</option>'+colsOpts+'</select></div>',
         remover_nulos: '<div class="form-group"><label>Colunas</label><select class="form-control" id="lp-col" multiple style="height:100px">'+colsOpts+'</select></div>',
@@ -846,7 +942,7 @@ function atualizarFormManip() {
     const op = document.getElementById('manip-operacao').value;
     const col = typeof COLUNAS !== 'undefined' ? COLUNAS : [];
     const div = document.getElementById('manip-params');
-    const c = col.map(x => '<option value="'+x+'">'+x+'</option>').join('');
+    const c = col.map(x => '<option value="'+escHtml(x)+'">'+escHtml(x)+'</option>').join('');
     const forms = {
         esquerda: '<div class="form-group"><label>Coluna</label><select class="form-control" id="mp-col">'+c+'</select></div><div class="form-group"><label>N caracteres</label><input class="form-control" id="mp-n" type="number" value="3"></div><div class="form-group"><label>Nova coluna</label><input class="form-control" id="mp-nova"></div>',
         direita: '<div class="form-group"><label>Coluna</label><select class="form-control" id="mp-col">'+c+'</select></div><div class="form-group"><label>N caracteres</label><input class="form-control" id="mp-n" type="number" value="3"></div><div class="form-group"><label>Nova coluna</label><input class="form-control" id="mp-nova"></div>',

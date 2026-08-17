@@ -134,6 +134,11 @@ async def load_file(request: Request, session_id: str):
         if ext in (".xlsx", ".xls"):
             converter = ExcelConverter(logger=sessao["logger"])
             sheets = converter.listar_sheets(caminho)
+            if not sheets:
+                raise ValueError(
+                    f"Arquivo '{os.path.basename(caminho)}' nao possui abas validas. "
+                    "Verifique se o arquivo nao esta corrompido."
+                )
             caminho_csv = converter.converter(caminho, PASTA_UPLOADS, sheet=sheets[0], nome_saida=os.path.splitext(os.path.basename(caminho))[0])
             loader = CSVLoader(caminho_csv, logger=sessao["logger"])
         else:
@@ -286,9 +291,22 @@ async def preview(request: Request, session_id: str):
     if ctx.data.empty:
         return JSONResponse({"ok": False, "mensagem": "Nenhum dado."}, status_code=400)
 
+    import math
+
     df = ctx.data.head(50)
-    colunas = list(df.columns)
-    linhas = df.fillna("").values.tolist()
+    colunas = [str(c) for c in df.columns]
+
+    linhas = []
+    for _, row in df.iterrows():
+        linha = []
+        for v in row:
+            if v is None or (isinstance(v, float) and math.isnan(v)):
+                linha.append("")
+            elif isinstance(v, float):
+                linha.append(round(v, 6))
+            else:
+                linha.append(str(v)[:200])
+        linhas.append(linha)
 
     return JSONResponse({
         "ok": True,
@@ -325,7 +343,7 @@ async def listar_pastas(caminho: str = ""):
 
 
 @app.get("/exportar/{session_id}")
-async def exportar(request: Request, session_id: str, pasta: str = ""):
+async def exportar(request: Request, session_id: str, pasta: str = "", formato: str = "csv"):
     sessao = get_session(session_id)
     ctx = sessao["ctx"]
 
@@ -342,9 +360,15 @@ async def exportar(request: Request, session_id: str, pasta: str = ""):
         except Exception as e:
             return JSONResponse({"ok": False, "mensagem": f"Erro ao criar pasta: {e}"}, status_code=400)
 
-    exporter = PowerBIExporter(pasta_destino, logger=sessao["logger"])
     nome_base = f"etl_{session_id}_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
-    caminho = exporter.exportar(ctx.data, nome_base)
+
+    if formato == "xlsx":
+        import pandas as pd
+        caminho = os.path.join(pasta_destino, f"{nome_base}.xlsx")
+        ctx.data.to_excel(caminho, index=False, engine="openpyxl")
+    else:
+        exporter = PowerBIExporter(pasta_destino, logger=sessao["logger"])
+        caminho = exporter.exportar(ctx.data, nome_base)
 
     return JSONResponse({
         "ok": True,

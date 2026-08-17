@@ -412,20 +412,31 @@ textarea.form-control { min-height: 80px; resize: vertical; font-family: 'Fira C
 .item-info .item-list { margin-top: 6px; }
 
 /* ═══ DATA TABLE ═══ */
-.data-table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
+.data-table { width: 100%; border-collapse: collapse; font-size: 0.82rem; }
 .data-table th {
     background: #f8f9fa;
-    padding: 10px 14px;
+    padding: 10px 12px;
     text-align: left;
-    font-size: 0.75rem;
-    font-weight: 600;
+    font-size: 0.72rem;
+    font-weight: 700;
     text-transform: uppercase;
     letter-spacing: 0.3px;
     color: var(--text-muted);
     border-bottom: 2px solid var(--border);
+    border-right: 1px solid var(--border);
+    white-space: nowrap;
 }
-.data-table td { padding: 10px 14px; border-bottom: 1px solid #f0f0f0; }
-.data-table tbody tr:hover { background: rgba(31,67,140,0.02); }
+.data-table td {
+    padding: 8px 12px;
+    border-bottom: 1px solid #f0f0f0;
+    border-right: 1px solid #f0f0f0;
+    white-space: nowrap;
+    max-width: 250px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+.data-table tbody tr:hover { background: rgba(31,67,140,0.03); }
+.data-table th:last-child, .data-table td:last-child { border-right: none; }
 
 /* ═══ PROGRESS BAR ═══ */
 .progress-bar {
@@ -467,11 +478,15 @@ textarea.form-control { min-height: 80px; resize: vertical; font-family: 'Fira C
     inset: 0;
     background: rgba(0,0,0,0.4);
     backdrop-filter: blur(4px);
-    display: flex;
+    display: none;
     align-items: center;
     justify-content: center;
     z-index: 1000;
     padding: 20px;
+}
+
+.modal-overlay.visible {
+    display: flex;
 }
 
 .modal-card {
@@ -513,3 +528,75 @@ textarea.form-control { min-height: 80px; resize: vertical; font-family: 'Fira C
     .main-content { margin-left: 0; padding: 16px; }
     .grid-2, .grid-3, .grid-4 { grid-template-columns: 1fr; }
 }
+
+/* ═══ RESULTADO PANELS ═══ */
+.resultado-tab-btn.active {
+    background: var(--blue) !important;
+    color: white !important;
+    box-shadow: 0 2px 8px rgba(31,67,140,0.3);
+}
+.resultado-panel {
+    animation: panelFadeIn 0.25s ease;
+}
+@keyframes panelFadeIn {
+    from { opacity: 0; transform: translateY(-8px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* ═══ PREVIEW SCROLL ═══ */
+.preview-scroll-container {
+    max-height: 60vh;
+    overflow: auto;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    background: white;
+}
+.preview-scroll-container .data-table {
+    margin: 0;
+}
+.preview-scroll-container .data-table th {
+    position: sticky;
+    top: 0;
+    z-index: 1;
+    background: #f8f9fa;
+}
+.preview-scroll-container .data-table td:last-child,
+.preview-scroll-container .data-table th:last-child {
+    border-right: none;
+}
+
+/* ═══ DOWNLOAD MODAL ═══ */
+.download-options {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin-bottom: 20px;
+}
+.download-folder-row {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+}
+.download-folder-row input { flex: 1; }
+.format-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+}
+.format-option {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 14px;
+    border: 2px solid var(--border);
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    transition: all 0.15s;
+    font-size: 0.85rem;
+    font-weight: 500;
+}
+.format-option:hover { border-color: var(--blue); background: rgba(31,67,140,0.03); }
+.format-option.selected { border-color: var(--blue); background: rgba(31,67,140,0.06); }
+.format-option input[type="checkbox"] { accent-color: var(--blue); width: 16px; height: 16px; cursor: pointer; }
+.format-option label { cursor: pointer; flex: 1; display: flex; flex-direction: column; }
+.format-option .format-desc { font-size: 0.72rem; color: var(--text-muted); font-weight: 400; }
