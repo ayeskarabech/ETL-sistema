@@ -47,26 +47,3 @@ Acesse http://localhost:8000
 ```
 pip install -r requirements.txt
 ```
-
----
-
-## Estrutura do Projeto
-
-```
-app/                    FastAPI + templates + static
-  main.py               Servidor web
-  templates/base.html   Interface SPA
-  static/css/           Estilos
-
-src/                    Modulos Python
-  cleaning/             Limpeza de dados
-  diagnostics/          Scanner e relatorio
-  export/               Exportador CSV/PowerBI
-  formulas/             Motor de formulas Excel
-  loaders/              CSV, Excel, DuckDB, Parquet
-  pipeline/             Contexto e workflow
-  utils/                Logger
-  validation/           Validador de qualidade
-
-data/                   Uploads e logs (gitignored)
-```
