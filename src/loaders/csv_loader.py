@@ -13,6 +13,8 @@ import os
 import pandas as pd
 import polars as pl
 
+SEPARADORES_CANDIDATOS = [";", ",", "\t", "|"]
+
 COMBINACOES_TESTADAS = [
     {"encoding": "utf-8", "separator": ";"},
     {"encoding": "utf-8", "separator": ","},
@@ -46,19 +48,68 @@ class CSVLoader:
             print(mensagem)
 
     def detectar_formato(self) -> dict:
-        """Testa combinações de encoding/separador nas primeiras linhas."""
+        """Testa combinações de encoding/separador e escolhe a que produz mais colunas."""
+        melhor = None
+        melhor_colunas = 0
+
         for combo in COMBINACOES_PANDAS:
             try:
-                pd.read_csv(self.caminho_arquivo, nrows=5, **combo)
-                self.combo_detectado = combo
-                self._log(f"Formato detectado para '{os.path.basename(self.caminho_arquivo)}': {combo}")
-                return combo
+                df_teste = pd.read_csv(self.caminho_arquivo, nrows=10, **combo)
+                n_colunas = len(df_teste.columns)
+                if n_colunas > melhor_colunas:
+                    melhor_colunas = n_colunas
+                    melhor = combo
+                if n_colunas > 1:
+                    break
             except Exception:
                 continue
+
+        if melhor and melhor_colunas > 1:
+            self.combo_detectado = melhor
+            self._log(f"Formato detectado para '{os.path.basename(self.caminho_arquivo)}': {melhor} ({melhor_colunas} colunas)")
+            return melhor
+
+        # Fallback: contar ocorrencias de separadores no texto cru
+        sep_texto = self._detectar_separador_por_texto()
+        if sep_texto:
+            encoding = melhor["encoding"] if melhor else "utf-8"
+            self.combo_detectado = {"encoding": encoding, "sep": sep_texto}
+            self._log(f"Formato detectado por analise textual: sep='{sep_texto}', encoding='{encoding}'")
+            return self.combo_detectado
+
+        if melhor:
+            self.combo_detectado = melhor
+            self._log(f"Formato detectado (1 coluna): {melhor}", "warning")
+            return melhor
+
         raise ValueError(
             f"Nao foi possivel detectar encoding/separador de '{os.path.basename(self.caminho_arquivo)}'. "
             "Verifique o arquivo manualmente."
         )
+
+    def _detectar_separador_por_texto(self) -> str:
+        """Conta ocorrencias de separadores nas primeiras linhas do arquivo."""
+        try:
+            for enc in ["utf-8", "latin-1", "cp1252"]:
+                try:
+                    with open(self.caminho_arquivo, "r", encoding=enc, errors="replace") as f:
+                        linhas = [f.readline() for _ in range(5)]
+                    break
+                except Exception:
+                    continue
+            else:
+                return None
+
+            contagens = {}
+            for sep in SEPARADORES_CANDIDATOS:
+                contagens[sep] = sum(l.count(sep) for l in linhas)
+
+            melhor = max(contagens, key=contagens.get)
+            if contagens[melhor] > 0:
+                return melhor
+        except Exception:
+            pass
+        return None
 
     def carregar(self, colunas: list = None, tipos: dict = None) -> pd.DataFrame:
         """

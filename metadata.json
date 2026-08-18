@@ -1,6 +1,0 @@
-{
-  "name": "ETL NGR-SEE",
-  "description": "Sistema de ETL e Limpeza de Dados RobEdu com diagnósticos, regras de limpeza, fórmulas e exportação para Power BI",
-  "requestFramePermissions": [],
-  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
-}

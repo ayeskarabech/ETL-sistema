@@ -5,6 +5,9 @@ data/processed/
 data/logs/
 data/uploads/
 temp/
+node_modules/
+dist/
+.env
 !data/raw/.gitkeep
 !data/processed/.gitkeep
 !data/logs/.gitkeep
