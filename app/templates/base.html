@@ -351,9 +351,6 @@
                     <button class="btn btn-primary btn-sm" onclick="carregarDiagnosticoFinal()">
                         <span class="icon-btn" data-icon="refresh"></span> Atualizar
                     </button>
-                    <button class="btn btn-accent btn-sm" onclick="exportarDados()">
-                        <span class="icon-btn" data-icon="download"></span> Exportar Arquivo
-                    </button>
                 </div>
             </div>
 
@@ -453,6 +450,40 @@
                     </div>
                 </div>
 
+                <!-- OPÇÕES DE EXPORTAÇÃO -->
+                <div class="glass-card" style="margin-bottom:0">
+                    <div style="font-size:0.92rem; font-weight:700; color:var(--text-primary); margin-bottom:16px; display:flex; align-items:center; gap:8px;">
+                        <span class="icon-inline" data-icon="download"></span> Opções de Exportação
+                    </div>
+                    <div class="grid-2" style="gap:18px">
+                        <div class="form-group" style="margin-bottom:0">
+                            <label>Formato do Arquivo</label>
+                            <select class="form-control" id="export-formato">
+                                <option value="powerbi">Power BI (CSV UTF-8 BOM, separador ;)</option>
+                                <option value="csv">CSV Padrão (separador ,)</option>
+                                <option value="excel">Planilha Excel (.xlsx)</option>
+                            </select>
+                        </div>
+                        <div class="form-group" style="margin-bottom:0">
+                            <label>Pasta de Destino</label>
+                            <div style="display:flex; gap:8px">
+                                <input class="form-control" id="pasta-destino" placeholder="Padrão: data/processed" readonly style="flex:1">
+                                <button class="btn btn-secondary btn-sm" onclick="abrirBrowserPastas()">
+                                    <span class="icon-btn" data-icon="folder"></span> Navegar
+                                </button>
+                            </div>
+                            <div style="font-size:0.75rem; color:var(--text-muted); margin-top:6px; font-family:'JetBrains Mono', monospace">
+                                Padrão: {{ pasta_processed }}
+                            </div>
+                        </div>
+                    </div>
+                    <div style="display:flex; justify-content:flex-end; gap:10px; margin-top:18px">
+                        <button class="btn btn-accent btn-sm" onclick="exportarDados()">
+                            <span class="icon-btn" data-icon="download"></span> Exportar Arquivo
+                        </button>
+                    </div>
+                </div>
+
                 <!-- RESULTADO EXPORTAÇÃO SUCESSO -->
                 <div id="export-result" style="display:none; margin-top:20px">
                     <div class="glass-card" style="margin-bottom:0; border-left:4px solid var(--green); background: rgba(16, 185, 129, 0.08);">
@@ -487,6 +518,32 @@
                 </div>
 
             </div>
+
+            <!-- MODAL: NAVEGADOR DE PASTAS -->
+            <div id="folder-browser-modal" class="modal-overlay">
+                <div class="glass-card modal-card">
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px">
+                        <h3 style="font-size:1rem; color:var(--text-primary); margin:0">Navegar Pastas</h3>
+                        <button class="btn btn-ghost btn-sm" onclick="fecharBrowserPastas()">
+                            <span class="icon-btn" data-icon="close"></span>
+                        </button>
+                    </div>
+                    <div style="display:flex; gap:8px; margin-bottom:12px; align-items:center">
+                        <button class="btn btn-ghost btn-sm" id="btn-pai" onclick="navegarPai()">
+                            <span class="icon-btn" data-icon="arrow-left"></span>
+                        </button>
+                        <input class="form-control" id="browser-caminho" readonly style="flex:1; font-family:'JetBrains Mono', monospace; font-size:0.82rem">
+                    </div>
+                    <div class="folder-list" id="browser-lista" style="max-height:350px; overflow-y:auto"></div>
+                    <div style="display:flex; justify-content:flex-end; gap:10px; margin-top:16px">
+                        <button class="btn btn-secondary btn-sm" onclick="fecharBrowserPastas()">Cancelar</button>
+                        <button class="btn btn-accent btn-sm" onclick="confirmarPasta()">
+                            <span class="icon-btn" data-icon="check"></span> Selecionar Esta Pasta
+                        </button>
+                    </div>
+                </div>
+            </div>
+
         </section>
 
     </main>
@@ -553,7 +610,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 /* ── UTILS ──────────────────────────────────────────────────── */
 function fmtNum(n) { return (n === null || n === undefined) ? '0' : Number(n).toLocaleString('pt-BR'); }
-function getMultiSelect(id) { const el = document.getElementById(id); return el ? Array.from(el.selectedOptions).map(o => o.value) : []; }
+function getMultiSelect(id) { const el = document.getElementById(id); return el ? Array.from(el.selectedOptions).map(o => o.value).filter(v => v !== '') : []; }
 function showNotification(msg, tipo = 'info') {
     const n = document.createElement('div');
     n.className = 'notification';
@@ -745,7 +802,7 @@ function adicionarLimpeza() {
     const op=document.getElementById('limp-operacao').value; if(!op){showNotification('Selecione uma operação de limpeza','error');return;}
     let params={};
     switch(op){
-        case 'remover_duplicatas': params={colunas:getMultiSelect('lp-col')||null};break;
+        case 'remover_duplicatas':{const c=getMultiSelect('lp-col');params={colunas:c.length?c:null};break;}
         case 'remover_nulos': params={colunas:getMultiSelect('lp-col')};break;
         case 'preencher_nulos':{const c=getMultiSelect('lp-col'),v=document.getElementById('lp-valor')?.value||'',e={};c.forEach(x=>e[x]=v||'');params={estrategias:e};break;}
         case 'remover_colunas_vazias': params={limiar:parseFloat(document.getElementById('lp-limiar')?.value||1)};break;
@@ -870,13 +927,13 @@ async function exportarDados(){
         if(j.ok){
             document.getElementById('export-result').style.display = 'block';
             const formatoLabels = { powerbi: 'Power BI (CSV UTF-8 BOM ;)', csv: 'CSV Padrão (,)', excel: 'Planilha Excel (.xlsx)' };
-            const rotulo = formatoLabels[j.formato] || j.formato;
+            const rotulo = formatoLabels[j.formato] || formatoLabels[formato] || formato;
             document.getElementById('export-file').innerHTML = '<strong>' + j.arquivo + '</strong> (' + rotulo + ')' + (j.pasta_destino ? '<br><span style="font-family:\'JetBrains Mono\', monospace; font-size:0.78rem; color:var(--text-muted)">Salvo em: ' + j.pasta_destino + '</span>' : '');
             
             const btnDownload = document.getElementById('export-download-btn');
             if (btnDownload) {
                 btnDownload.style.display = 'inline-flex';
-                btnDownload.href = '/download_export/' + SID + '?formato=' + encodeURIComponent(formato);
+                btnDownload.href = j.download_url || ('/download_export/' + SID + '?formato=' + encodeURIComponent(formato));
                 btnDownload.download = j.arquivo;
             }
             showNotification('Arquivo exportado com sucesso!', 'success');
@@ -912,6 +969,7 @@ async function updateEstado(){
 
 /* ── BROWSER DE PASTAS ──────────────────────────────────────── */
 let browserCaminhoAtual = '';
+let browserCaminhoPai = null;
 function abrirBrowserPastas(){
     const modal=document.getElementById('folder-browser-modal');
     modal.classList.add('visible');
@@ -930,6 +988,7 @@ async function navegarBrowser(caminho){
         const j=await r.json();
         if(!j.ok){lista.innerHTML='<div style="text-align:center;padding:24px;color:var(--red)">'+j.mensagem+'</div>';return;}
         browserCaminhoAtual=j.caminho;
+        browserCaminhoPai=j.pai;
         document.getElementById('browser-caminho').value=j.caminho;
         document.getElementById('btn-pai').disabled=!j.pai;
         if(!j.pastas.length){lista.innerHTML='<div style="text-align:center;padding:24px;color:var(--text-muted);font-size:0.86rem">Nenhuma subpasta encontrada</div>';return;}
@@ -939,9 +998,7 @@ async function navegarBrowser(caminho){
     }catch(e){lista.innerHTML='<div style="text-align:center;padding:24px;color:var(--red)">Erro: '+e.message+'</div>';}
 }
 function navegarPai(){
-    const caminho=document.getElementById('browser-caminho').value;
-    const partes=caminho.split(/[\\/]/).filter(Boolean);
-    if(partes.length>1){partes.pop();navegarBrowser(partes[0]+'\\'+partes.slice(1).join('\\'));}else{navegarBrowser('');}
+    if(browserCaminhoPai){navegarBrowser(browserCaminhoPai);}else{navegarBrowser('');}
 }
 function confirmarPasta(){
     document.getElementById('pasta-destino').value=browserCaminhoAtual;

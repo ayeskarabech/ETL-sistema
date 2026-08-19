@@ -6,13 +6,17 @@ FastAPI + Jinja2 + Glassmorphism
 import os
 import sys
 import uuid
+import math
 import asyncio
 from datetime import datetime
+
+import numpy as np
+import pandas as pd
 
 from fastapi import FastAPI, UploadFile, File, Form, Request
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
-from fastapi.responses import HTMLResponse, RedirectResponse, JSONResponse
+from fastapi.responses import HTMLResponse, RedirectResponse, JSONResponse, FileResponse
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
@@ -41,10 +45,15 @@ templates = Jinja2Templates(directory=os.path.join(BASE_DIR, "templates"))
 
 sessions: dict = {}
 
+# Um unico logger por processo. Antes era criado um dentro de get_session(),
+# o que abria um arquivo de log novo (e zerava os handlers do logger
+# compartilhado) a cada aba aberta no navegador.
+LOGGER = configurar_logger()
+
 
 def get_session(session_id: str):
     if session_id not in sessions:
-        logger = configurar_logger()
+        logger = LOGGER
         ctx = PipelineContext(logger=logger)
         pipeline = Pipeline(ctx, logger=logger)
         sessions[session_id] = {
@@ -60,12 +69,39 @@ def get_session(session_id: str):
     return sessions[session_id]
 
 
+def _json_safe(valor):
+    """
+    Converte um valor de celula do pandas para algo que o json aceite.
+
+    numpy.int64, numpy.bool_, Timestamp, NaT e NaN nao sao serializaveis pelo
+    json padrao — sem esta conversao o /preview devolve 500 dependendo dos
+    tipos que o arquivo carregado produziu.
+    """
+    if valor is None or valor is pd.NaT:
+        return ""
+    if isinstance(valor, float) and math.isnan(valor):
+        return ""
+    if isinstance(valor, (np.integer,)):
+        return int(valor)
+    if isinstance(valor, (np.floating,)):
+        f = float(valor)
+        return "" if math.isnan(f) else round(f, 6)
+    if isinstance(valor, (np.bool_, bool)):
+        return bool(valor)
+    if isinstance(valor, (int, float, str)):
+        return valor
+    try:
+        if pd.isna(valor):
+            return ""
+    except (TypeError, ValueError):
+        pass
+    return str(valor)[:200]
+
+
 @app.get("/", response_class=HTMLResponse)
 async def index(request: Request):
     session_id = str(uuid.uuid4())[:8]
-    sessao = get_session(session_id)
-    response = RedirectResponse(url=f"/app/{session_id}", status_code=302)
-    return response
+    return RedirectResponse(url=f"/app/{session_id}", status_code=302)
 
 
 @app.get("/app/{session_id}", response_class=HTMLResponse)
@@ -292,8 +328,8 @@ async def preview(request: Request, session_id: str):
         return JSONResponse({"ok": False, "mensagem": "Nenhum dado."}, status_code=400)
 
     df = ctx.data.head(50)
-    colunas = list(df.columns)
-    linhas = df.fillna("").values.tolist()
+    colunas = [str(c) for c in df.columns]
+    linhas = [[_json_safe(v) for v in linha] for linha in df.itertuples(index=False, name=None)]
 
     return JSONResponse({
         "ok": True,
@@ -329,13 +365,48 @@ async def listar_pastas(caminho: str = ""):
         return JSONResponse({"ok": False, "mensagem": str(e)}, status_code=400)
 
 
+FORMATOS_EXPORT = ("powerbi", "csv", "excel")
+
+MIME_EXPORT = {
+    "powerbi": "text/csv; charset=utf-8",
+    "csv": "text/csv; charset=utf-8",
+    "excel": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+}
+
+
+def _gerar_export(df, pasta_destino: str, nome_base: str, formato: str, logger=None) -> str:
+    """
+    Grava o DataFrame no formato pedido e devolve o caminho do arquivo.
+
+    powerbi -> CSV UTF-8 com BOM, separador ';' e colunas em snake_case
+    csv     -> CSV UTF-8 padrao, separador ',' e nomes de coluna originais
+    excel   -> planilha .xlsx via openpyxl
+    """
+    if formato == "excel":
+        caminho = os.path.join(pasta_destino, f"{nome_base}.xlsx")
+        df.to_excel(caminho, index=False, engine="openpyxl")
+        return caminho
+
+    if formato == "csv":
+        caminho = os.path.join(pasta_destino, f"{nome_base}.csv")
+        df.to_csv(caminho, index=False, sep=",", encoding="utf-8")
+        return caminho
+
+    exporter = PowerBIExporter(pasta_destino, logger=logger)
+    return exporter.exportar(df, nome_base)
+
+
 @app.get("/exportar/{session_id}")
-async def exportar(request: Request, session_id: str, pasta: str = ""):
+async def exportar(request: Request, session_id: str, pasta: str = "", formato: str = "powerbi"):
     sessao = get_session(session_id)
     ctx = sessao["ctx"]
 
     if ctx.data.empty:
         return JSONResponse({"ok": False, "mensagem": "Nenhum dado para exportar."}, status_code=400)
+
+    formato = (formato or "powerbi").strip().lower()
+    if formato not in FORMATOS_EXPORT:
+        formato = "powerbi"
 
     validator = DataValidator(logger=sessao["logger"])
     resultado = validator.validar(ctx.data, linhas_minimas_esperadas=1)
@@ -347,9 +418,18 @@ async def exportar(request: Request, session_id: str, pasta: str = ""):
         except Exception as e:
             return JSONResponse({"ok": False, "mensagem": f"Erro ao criar pasta: {e}"}, status_code=400)
 
-    exporter = PowerBIExporter(pasta_destino, logger=sessao["logger"])
     nome_base = f"etl_{session_id}_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
-    caminho = exporter.exportar(ctx.data, nome_base)
+
+    try:
+        caminho = await asyncio.to_thread(
+            _gerar_export, ctx.data, pasta_destino, nome_base, formato, sessao["logger"]
+        )
+    except Exception as e:
+        return JSONResponse({"ok": False, "mensagem": f"Erro ao gravar o arquivo: {e}"}, status_code=400)
+
+    # Guardado por formato: o botao "Baixar Arquivo" chama /download_export
+    # depois, e precisa reencontrar exatamente este arquivo.
+    sessao.setdefault("exports", {})[formato] = caminho
 
     return JSONResponse({
         "ok": True,
@@ -358,9 +438,35 @@ async def exportar(request: Request, session_id: str, pasta: str = ""):
         "arquivo": os.path.basename(caminho),
         "caminho_completo": caminho,
         "pasta_destino": pasta_destino,
+        "formato": formato,
+        "download_url": f"/download_export/{session_id}?formato={formato}",
         "linhas": len(ctx.data),
         "colunas": len(ctx.data.columns),
     })
+
+
+@app.get("/download_export/{session_id}")
+async def download_export(request: Request, session_id: str, formato: str = "powerbi"):
+    """Devolve pelo navegador o arquivo gerado pelo /exportar mais recente."""
+    sessao = get_session(session_id)
+
+    formato = (formato or "powerbi").strip().lower()
+    if formato not in FORMATOS_EXPORT:
+        formato = "powerbi"
+
+    caminho = sessao.get("exports", {}).get(formato)
+
+    if not caminho or not os.path.exists(caminho):
+        return JSONResponse(
+            {"ok": False, "mensagem": "Nenhum arquivo exportado neste formato. Clique em 'Exportar Arquivo' primeiro."},
+            status_code=404,
+        )
+
+    return FileResponse(
+        caminho,
+        media_type=MIME_EXPORT[formato],
+        filename=os.path.basename(caminho),
+    )
 
 
 @app.get("/historico/{session_id}")
@@ -382,8 +488,6 @@ async def diagnostico_final(request: Request, session_id: str):
 
     if ctx.data.empty:
         return JSONResponse({"ok": False, "mensagem": "Nenhum dado carregado."}, status_code=400)
-
-    import pandas as pd
 
     def snapshot_dict(df, snapshot_inicial=None):
         """Gera dict com metricas do DataFrame."""

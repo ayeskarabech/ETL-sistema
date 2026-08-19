@@ -1,5 +1,26 @@
-To run:
-só abrir http://localhost:8000/
+COMO RODAR O RoboEdu
+====================
 
-// old: python -m uvicorn app.main:app --host 0.0.0.0 --port 8000
-    Then open http://localhost:8000 — it auto-redirects to the SPA.
+1) Instalar as dependencias (uma vez so):
+
+   pip install -r requirements.txt
+
+2) Subir o servidor, sempre a partir da raiz do projeto:
+
+   python -m uvicorn app.main:app --host 127.0.0.1 --port 8000
+
+   (para acessar de outra maquina da rede, troque por --host 0.0.0.0)
+
+3) Abrir no navegador:
+
+   http://localhost:8000
+
+   A pagina "/" redireciona sozinha para /app/<id_da_sessao>.
+
+Observacoes
+-----------
+- O servidor PRECISA estar rodando: abrir a URL sem executar o passo 2
+  nao funciona, o navegador vai dizer que nao conseguiu conectar.
+- Rode o comando na pasta raiz (a que contem "app/" e "src/"), senao o
+  Python nao encontra o pacote "src".
+- Para parar o servidor: Ctrl+C no terminal.

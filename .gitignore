@@ -11,3 +11,5 @@ dist/
 !data/raw/.gitkeep
 !data/processed/.gitkeep
 !data/logs/.gitkeep
+.venv/
+venv/

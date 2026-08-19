@@ -37,13 +37,17 @@ Reescrita completa com interface web, motor DuckDB para bases grandes e suporte 
 - Preview de dados com tabela scrollavel
 - Historico completo de transformacoes aplicadas
 
-**Como rodar:**
-```
-python -m uvicorn app.main:app --host 0.0.0.0 --port 8000
-```
-Acesse http://localhost:8000
-
 **Dependencias:**
 ```
 pip install -r requirements.txt
 ```
+
+**Como rodar:**
+
+Na pasta raiz do projeto (a que contem `app/` e `src/`):
+```
+python -m uvicorn app.main:app --host 127.0.0.1 --port 8000
+```
+Depois acesse http://localhost:8000 — a rota `/` redireciona para a SPA.
+
+O servidor precisa ficar rodando enquanto o sistema estiver em uso.
